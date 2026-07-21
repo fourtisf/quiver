@@ -29,9 +29,20 @@ the v4-vs-v3 call, scaffold the monorepo, get CI green. Nothing is deployed yet.
 
 ## Answers M0 produced for your §10 open questions
 
-- **§10.1 RobinfunFactory:** still needed from you/Michael — nothing public
-  found; M1 builds against an interface + mock until then.
-- Everything else unchanged.
+- **§10.1 RobinfunFactory:** mostly answered — the public repo
+  `github.com/fourtisf/robinfun` fixes the verification interface:
+  **`curveOf(token) != address(0)`** (there is no `isLaunched()`). Two candidate
+  mainnet factory addresses found; you still need to confirm which is canonical,
+  whether betaMode is on, and pin a testnet deployment (ENVIRONMENT.md §4, ⚠4 is
+  a one-command check).
+- **Decisions made under the spec's own rules:** Uniswap **v4** (canonically
+  deployed on mainnet — but NOT on testnet, so M1 tests run on a mainnet fork);
+  indexing via **Goldsky** (Uniswap itself runs on it for this chain); TP/SL
+  keeper is **self-run** (neither Chainlink Automation nor Gelato supports the
+  chain). One consequence worth your attention: v4 pools need our **oracle hook
+  at creation time** for TWAP — that moved from M5 into M1 scope.
+- §10.2 (treasury signers), §10.3 (10 bps execution fee), §10.4 (name) —
+  still yours.
 
 ## What M0 explicitly did not do
 
