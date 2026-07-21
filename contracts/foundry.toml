@@ -1,0 +1,22 @@
+[profile.default]
+src = "src"
+out = "out"
+test = "test"
+script = "script"
+libs = ["lib"]
+solc_version = "0.8.26"
+# Uniswap v4 needs EIP-1153 transient storage => cancun. Robinhood Chain is an
+# Arbitrum Orbit chain on a recent ArbOS, which supports cancun opcodes.
+# Re-verify against the live chain before mainnet deploy (see docs/ENVIRONMENT.md).
+evm_version = "cancun"
+optimizer = true
+optimizer_runs = 1_000
+
+[profile.ci]
+fuzz = { runs = 1_000 }
+invariant = { runs = 256, depth = 32 }
+
+[fmt]
+line_length = 120
+tab_width = 4
+bracket_spacing = false

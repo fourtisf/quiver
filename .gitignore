@@ -1,0 +1,29 @@
+# deps
+node_modules/
+
+# builds
+.next/
+out/
+dist/
+.turbo/
+
+# foundry
+contracts/cache/
+contracts/out/
+contracts/broadcast/**/dry-run/
+
+# indexer
+indexer/.ponder/
+indexer/generated/
+
+# env & secrets — never commit RPC keys or private keys
+.env
+.env.*
+!.env.example
+
+# misc
+*.tsbuildinfo
+.DS_Store
+*.log
+coverage/
+lcov.info
