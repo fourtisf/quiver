@@ -1,6 +1,12 @@
-# Quiver
+# Hoodpool
 
 **The liquidity layer for Robinfun tokens on Robinhood Chain.**
+
+> Naming: final brand is **Hoodpool** (domain **hoodpool.fun**, secured 2026-07-22),
+> superseding the working names Quiver/$QVR and Aquifer/$AQFR. Ticker $HPL is
+> penciled in, pending ALFA's sign-off. The full repo rename (package names,
+> repo slug) lands with the M2 brand pass; `/site` and the design preview
+> already carry Hoodpool branding.
 
 Launch on Robinfun → deploy liquidity on Quiver → lock LP in Strongroom.
 

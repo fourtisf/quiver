@@ -16,7 +16,7 @@ export default function Home() {
           Robinhood Chain · Arbitrum Orbit
         </p>
         <h1 className="font-disp text-5xl font-extrabold tracking-tight text-foam">
-          QUIVER<span className="text-spring">.</span>
+          HOODPOOL<span className="text-spring">.</span>
         </h1>
         <p className="max-w-xl text-base text-silt">
           The liquidity layer for Robinfun tokens. One-click Uniswap pools, 1% swap fees to LPs,
