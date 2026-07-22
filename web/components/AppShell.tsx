@@ -40,7 +40,7 @@ export default function AppShell() {
           <main className="flex flex-1 flex-col items-center px-5 pb-16 pt-10">
             <div className="mb-6 text-center">
               <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-spring">
-                Live · Beta
+                Live
               </p>
               <h1 className="mt-1 font-disp text-2xl font-extrabold">Swap on Robinhood Chain</h1>
               <p className="mt-1 max-w-md text-sm text-silt">
@@ -53,15 +53,7 @@ export default function AppShell() {
 
           <footer className="border-t border-stratum/50 py-5 text-center font-mono text-[11px] text-silt-dark">
             © 2026 HOODPOOL · <a className="text-silt hover:text-spring" href="/">home</a> ·{" "}
-            <a className="text-silt hover:text-spring" href="/preview/">design preview</a> ·{" "}
-            <a
-              className="text-silt hover:text-spring"
-              href="https://github.com/fourtisf/quiver"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              github
-            </a>
+            <a className="text-silt hover:text-spring" href="/preview/">design preview</a>
           </footer>
         </div>
       </ToastProvider>
