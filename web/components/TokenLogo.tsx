@@ -1,10 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { orbColor, type TokenInfo } from "@/lib/tokens";
 
 export function TokenLogo({ token, size = 28 }: { token: TokenInfo; size?: number }) {
   const [failed, setFailed] = useState(false);
+
+  // a new token (or a new logo URL) deserves a fresh attempt
+  useEffect(() => {
+    setFailed(false);
+  }, [token.address, token.logoURI]);
 
   if (token.logoURI && !failed) {
     return (

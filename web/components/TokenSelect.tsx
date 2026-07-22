@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { isAddress } from "viem";
+import { isAddress, type Address } from "viem";
 import { usePublicClient } from "wagmi";
 import { erc20Abi } from "@/lib/abis";
 import { CORE_TOKENS, fetchRobinfunTokens, type TokenInfo } from "@/lib/tokens";
@@ -34,10 +34,21 @@ export function TokenSelect({
     return () => { cancelled = true; };
   }, [open]);
 
+  // Escape closes the modal
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   // Pasting a 0x address resolves the token on-chain
   useEffect(() => {
     setResolved(null);
-    if (!client || !isAddress(query)) return;
+    if (!client || !isAddress(query)) {
+      setResolving(false);
+      return;
+    }
     let cancelled = false;
     setResolving(true);
     Promise.all([
@@ -53,8 +64,20 @@ export function TokenSelect({
     return () => { cancelled = true; };
   }, [query, client]);
 
+  const isExcluded = (addr: string) =>
+    !!exclude && addr.toLowerCase() === exclude.toLowerCase();
+
   const list = useMemo(() => {
-    const all = [...CORE_TOKENS, ...robinfun].filter((t) => t.address !== exclude);
+    const seen = new Set(CORE_TOKENS.map((t) => t.address.toLowerCase()));
+    const merged = [...CORE_TOKENS];
+    for (const t of robinfun) {
+      const key = t.address.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        merged.push(t);
+      }
+    }
+    const all = merged.filter((t) => !isExcluded(t.address));
     const q = query.trim().toLowerCase();
     if (!q) return all;
     return all.filter(
@@ -63,7 +86,26 @@ export function TokenSelect({
         t.name.toLowerCase().includes(q) ||
         t.address.toLowerCase() === q,
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [robinfun, query, exclude]);
+
+  /* Robinfun list entries assume 18 decimals; verify on-chain at selection so
+   * a nonstandard token can't corrupt every amount in the swap form. */
+  async function selectVerified(t: TokenInfo) {
+    if (t.robinfun && client) {
+      try {
+        const decimals = await Promise.race([
+          client.readContract({ address: t.address as Address, abi: erc20Abi, functionName: "decimals" }),
+          new Promise<never>((_, rej) => setTimeout(() => rej(new Error("timeout")), 4000)),
+        ]);
+        onSelect({ ...t, decimals });
+        return;
+      } catch {
+        /* fall through with the listed decimals */
+      }
+    }
+    onSelect(t);
+  }
 
   if (!open) return null;
 
@@ -94,11 +136,16 @@ export function TokenSelect({
           {resolving ? (
             <p className="px-1 py-2 font-mono text-xs text-silt">Resolving address…</p>
           ) : null}
-          {resolved ? (
-            <TokenRow token={resolved} onSelect={onSelect} note="resolved on-chain" />
+          {resolved && !isExcluded(resolved.address) ? (
+            <TokenRow token={resolved} onSelect={selectVerified} note="resolved on-chain" />
+          ) : null}
+          {resolved && isExcluded(resolved.address) ? (
+            <p className="px-1 py-2 font-mono text-xs text-silt">
+              That token is already selected on the other side.
+            </p>
           ) : null}
           {list.map((t) => (
-            <TokenRow key={t.address} token={t} onSelect={onSelect} />
+            <TokenRow key={t.address.toLowerCase()} token={t} onSelect={selectVerified} />
           ))}
           {list.length === 0 && !resolved && !resolving ? (
             <p className="px-1 py-3 text-sm text-silt">

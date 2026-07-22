@@ -32,7 +32,9 @@ const factory = parseAbi([
   "function getPair(address, address) view returns (address)",
 ]);
 
-const client = createPublicClient({ transport: http(RPC) });
+const client = createPublicClient({
+  transport: http(RPC, { retryCount: 5, retryDelay: 1500 }),
+});
 let failures = 0;
 const fail = (msg) => { failures++; console.error(`  ✗ FAIL  ${msg}`); };
 const pass = (msg) => console.log(`  ✓ PASS  ${msg}`);
