@@ -11,7 +11,7 @@ dist/
 contracts/cache/
 contracts/out/
 contracts/lib/
-lib/
+/lib/
 contracts/broadcast/**/dry-run/
 
 # indexer
