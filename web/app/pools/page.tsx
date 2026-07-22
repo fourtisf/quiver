@@ -2,8 +2,7 @@
 
 import dynamic from "next/dynamic";
 
-/* Wallet libraries need browser APIs; skip prerender so the static export stays clean. */
-const SwapScreen = dynamic(() => import("@/components/SwapScreen"), {
+const PoolsScreen = dynamic(() => import("@/components/PoolsScreen"), {
   ssr: false,
   loading: () => (
     <div className="flex min-h-screen items-center justify-center">
@@ -13,5 +12,5 @@ const SwapScreen = dynamic(() => import("@/components/SwapScreen"), {
 });
 
 export default function Page() {
-  return <SwapScreen />;
+  return <PoolsScreen />;
 }

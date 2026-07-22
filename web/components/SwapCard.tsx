@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { formatUnits, parseUnits, type Address } from "viem";
+import { formatUnits, isAddress, parseUnits, type Address } from "viem";
 import {
   useAccount,
   useBalance,
@@ -12,6 +12,7 @@ import {
 import { erc20Abi, v2RouterAbi } from "@/lib/abis";
 import { ADDRESSES } from "@/lib/addresses";
 import { NATIVE_ETH, type TokenInfo } from "@/lib/tokens";
+import { getEthUsd } from "@/lib/discover";
 import { fmtAmount } from "@/lib/format";
 import { TokenLogo } from "./TokenLogo";
 import { TokenSelect } from "./TokenSelect";
@@ -68,6 +69,30 @@ export function SwapCard() {
   const [customSlip, setCustomSlip] = useState("");
   const [selecting, setSelecting] = useState<"in" | "out" | null>(null);
   const [busy, setBusy] = useState(false);
+  const [ethUsd, setEthUsd] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!client) return;
+    let cancelled = false;
+    getEthUsd(client).then((v) => { if (!cancelled) setEthUsd(v); });
+    return () => { cancelled = true; };
+  }, [client]);
+
+  // deep link: /app/?token=0x... preselects the output token (Pools "Trade")
+  const deepLinked = useRef(false);
+  useEffect(() => {
+    if (deepLinked.current || !client) return;
+    const t = new URLSearchParams(window.location.search).get("token");
+    if (!t || !isAddress(t)) return;
+    deepLinked.current = true;
+    Promise.all([
+      client.readContract({ address: t, abi: erc20Abi, functionName: "symbol" }),
+      client.readContract({ address: t, abi: erc20Abi, functionName: "name" }),
+      client.readContract({ address: t, abi: erc20Abi, functionName: "decimals" }),
+    ])
+      .then(([symbol, name, decimals]) => setTokenOut({ address: t, symbol, name, decimals }))
+      .catch(() => { /* bad address in URL — ignore */ });
+  }, [client]);
 
   // amount only resets when the INPUT token changes (its decimals change);
   // picking the output token must not wipe what the user typed
@@ -275,6 +300,28 @@ export function SwapCard() {
     setSelecting(null);
   }
 
+  // ---- USD approximations via the WETH leg + WETH/USDG mid price ---------
+  const wethLower = ADDRESSES.weth.toLowerCase();
+  const usdgLower = ADDRESSES.usdg.toLowerCase();
+  function usdOfWeth(amount: bigint | undefined): number | null {
+    if (amount === undefined || ethUsd === null) return null;
+    return Number(formatUnits(amount, 18)) * ethUsd;
+  }
+  const wethIdx = path ? path.findIndex((a) => a.toLowerCase() === wethLower) : -1;
+  const wethLegAmt = amounts && wethIdx >= 0 ? amounts[wethIdx] : undefined;
+  function usdFor(token: TokenInfo | null, amount: bigint | undefined): string | undefined {
+    if (!token || amount === undefined) return undefined;
+    let v: number | null = null;
+    const addr = token.address.toLowerCase();
+    if (token.address === "native" || addr === wethLower) v = usdOfWeth(amount);
+    else if (addr === usdgLower) v = Number(formatUnits(amount, 6));
+    else v = usdOfWeth(wethLegAmt);
+    if (v === null || !Number.isFinite(v)) return undefined;
+    return `≈ $${v.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+  }
+  const usdPay = usdFor(tokenIn, amountIn ?? undefined);
+  const usdReceive = usdFor(tokenOut, amountOut);
+
   const action = !isConnected
     ? { label: "Connect a wallet to swap", disabled: true }
     : wrongNetwork
@@ -331,6 +378,7 @@ export function SwapCard() {
         label="You pay"
         token={tokenIn}
         amount={amountRaw}
+        usd={usdPay}
         onAmount={setAmountRaw}
         onPick={() => setSelecting("in")}
         balance={balanceIn}
@@ -355,6 +403,7 @@ export function SwapCard() {
         label="You receive (estimated)"
         token={tokenOut}
         amount={amountOut !== undefined && tokenOut ? fmtAmount(amountOut, tokenOut.decimals) : ""}
+        usd={usdReceive}
         readOnly
         onPick={() => setSelecting("out")}
       />
@@ -407,6 +456,7 @@ function TokenBox({
   label,
   token,
   amount,
+  usd,
   onAmount,
   onPick,
   readOnly,
@@ -416,6 +466,7 @@ function TokenBox({
   label: string;
   token: TokenInfo | null;
   amount: string;
+  usd?: string;
   onAmount?: (v: string) => void;
   onPick: () => void;
   readOnly?: boolean;
@@ -459,6 +510,7 @@ function TokenBox({
           )}
         </button>
       </div>
+      {usd ? <div className="mt-1 font-mono text-[11px] text-silt-dark">{usd}</div> : null}
     </div>
   );
 }
