@@ -1,7 +1,8 @@
 /**
- * Token logos, best-effort from two public keyless APIs:
- *  1. DexScreener  /tokens/v1/{chain}/{addrs}   (30 per call, CORS-open)
+ * Token logos, best-effort from three public keyless APIs:
+ *  1. DexScreener  /tokens/v1/{chain}/{addrs}    (30 per call, CORS-open)
  *  2. GeckoTerminal /networks/{net}/tokens/multi/{addrs} (30 per call)
+ *  3. Blockscout   /api/v2/tokens/{addr} icon_url (the chain's own explorer)
  * Chain slug on both is "robinhood" (verified via dexscreener.com/robinhood/…);
  * a runtime probe remains as fallback should they ever rename it.
  * Results (including "no logo anywhere") are cached for 24h.
@@ -10,7 +11,7 @@
 const DS_SLUGS = ["robinhood", "robinhoodchain", "robinhood-chain"];
 const GT_NETWORKS = ["robinhood", "robinhood-chain"];
 const SLUG_KEY = "hoodpool.ds.slug";
-const CACHE_KEY = "hoodpool.logos.v2"; // v1 may hold false negatives from a failed slug probe
+const CACHE_KEY = "hoodpool.logos.v3"; // bumped when new sources are added so old negatives re-query
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 type LogoCache = { at: number; map: Record<string, string> }; // "" = looked up, none found
@@ -63,6 +64,33 @@ async function gtBatch(network: string, addrs: string[]): Promise<GtToken[] | nu
   } catch {
     return null;
   }
+}
+
+const BLOCKSCOUT = "https://robinhoodchain.blockscout.com/api/v2/tokens/";
+
+async function bsIcon(addr: string): Promise<{ ok: boolean; url: string | null }> {
+  try {
+    const res = await fetch(BLOCKSCOUT + addr, { headers: { accept: "application/json" } });
+    if (!res.ok) return { ok: res.status === 404, url: null }; // 404 = answered: no such token/icon
+    const body = (await res.json()) as { icon_url?: string | null };
+    const url = typeof body.icon_url === "string" && body.icon_url.length > 0 ? body.icon_url : null;
+    return { ok: true, url };
+  } catch {
+    return { ok: false, url: null };
+  }
+}
+
+async function bsIcons(addrs: string[], onResult: (addr: string, r: { ok: boolean; url: string | null }) => void) {
+  const CONCURRENCY = 8;
+  let i = 0;
+  await Promise.all(
+    Array.from({ length: Math.min(CONCURRENCY, addrs.length) }, async () => {
+      while (i < addrs.length) {
+        const addr = addrs[i++];
+        onResult(addr, await bsIcon(addr));
+      }
+    }),
+  );
 }
 
 function chunk30(list: string[]): string[][] {
@@ -134,6 +162,15 @@ export async function fetchTokenLogos(addresses: string[]): Promise<Record<strin
           if (addr && img && wantedSet.has(addr) && !/missing\.png/.test(img) && !found[addr]) found[addr] = img;
         }
       }
+    }
+
+    // ---- pass 3: Blockscout (the chain's own explorer) ----------------------
+    const missing3 = missing.filter((a) => !found[a]);
+    if (missing3.length > 0) {
+      await bsIcons(missing3, (addr, r) => {
+        if (r.ok) responded.add(addr);
+        if (r.url && !found[addr]) found[addr] = r.url;
+      });
     }
 
     // Positives always cached; negatives ONLY for addresses a source actually

@@ -74,7 +74,7 @@ function parseToken(raw: unknown): TokenInfo | null {
 
 export async function fetchRobinfunTokens(): Promise<TokenInfo[]> {
   for (const host of ROBINFUN_API_HOSTS) {
-    for (const path of ["/tokens?limit=100", "/tokens"]) {
+    for (const path of ["/tokens?limit=200", "/tokens", "/coins?limit=200", "/coins", "/tokens/list"]) {
       try {
         const res = await fetch(`${host}${path}`, { headers: { accept: "application/json" } });
         if (!res.ok) continue;
