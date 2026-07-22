@@ -9,6 +9,8 @@ export type TokenInfo = {
   logoURI?: string;
   /** true for tokens that came from the Robinfun list */
   robinfun?: boolean;
+  /** pool depth in USD when known (discovery source) — helps spot clones */
+  tvlUsd?: number | null;
 };
 
 export const NATIVE_ETH: TokenInfo = {

@@ -100,7 +100,16 @@ export function TokenSelect({
         merged.push({ ...t, logoURI: logoByAddr.get(key) });
       }
     }
-    const all = merged.filter((t) => !isExcluded(t.address));
+    // flag repeated symbols: first occurrence (deepest pool) is trusted,
+    // later ones are likely on-chain clones and get a warning badge
+    const symbolSeen = new Set<string>();
+    const withDup = merged.map((t) => {
+      const key = t.symbol.toLowerCase();
+      const dup = symbolSeen.has(key);
+      symbolSeen.add(key);
+      return { ...t, __dup: dup } as TokenInfo & { __dup: boolean };
+    });
+    const all = withDup.filter((t) => !isExcluded(t.address));
     const q = query.trim().toLowerCase();
     if (!q) return all;
     return all.filter(
@@ -168,7 +177,12 @@ export function TokenSelect({
             </p>
           ) : null}
           {list.map((t) => (
-            <TokenRow key={t.address.toLowerCase()} token={t} onSelect={selectVerified} />
+            <TokenRow
+              key={t.address.toLowerCase()}
+              token={t}
+              dup={(t as TokenInfo & { __dup?: boolean }).__dup}
+              onSelect={selectVerified}
+            />
           ))}
           {list.length === 0 && !resolved && !resolving ? (
             <p className="px-1 py-3 text-sm text-silt">
@@ -188,27 +202,48 @@ export function TokenSelect({
   );
 }
 
+function fmtTvl(v: number | null | undefined): string | null {
+  if (v === null || v === undefined || !Number.isFinite(v)) return null;
+  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
+  if (v >= 1_000) return `$${(v / 1_000).toFixed(0)}K`;
+  return `$${v.toFixed(0)}`;
+}
+
 function TokenRow({
   token,
   onSelect,
   note,
+  dup,
 }: {
   token: TokenInfo;
   onSelect: (t: TokenInfo) => void;
   note?: string;
+  dup?: boolean;
 }) {
+  const tvl = fmtTvl(token.tvlUsd);
   return (
     <button
       className="flex w-full items-center gap-3 rounded-md px-2 py-2.5 text-left hover:bg-spring/10"
       onClick={() => onSelect(token)}
     >
       <TokenLogo token={token} />
-      <span>
-        <span className="block text-sm font-semibold">{token.symbol}</span>
-        <span className="block text-xs text-silt">{token.name}</span>
+      <span className="min-w-0">
+        <span className="flex items-center gap-1.5 text-sm font-semibold">
+          {token.symbol}
+          {dup ? (
+            <span
+              className="rounded-full border border-amber/40 bg-amber/10 px-1.5 py-px font-mono text-[9px] font-medium text-amber"
+              title="Same symbol as a deeper pool — verify the address before trading"
+            >
+              ⚠ clone?
+            </span>
+          ) : null}
+        </span>
+        <span className="block truncate text-xs text-silt">{token.name}</span>
       </span>
-      <span className="ml-auto font-mono text-[11px] text-silt-dark">
+      <span className="ml-auto text-right font-mono text-[11px] leading-tight text-silt-dark">
         {note ?? (token.robinfun ? "launchpad" : token.address === "native" ? "" : shortAddr(token.address))}
+        {tvl ? <span className="block text-[10px] text-silt">TVL {tvl}</span> : null}
       </span>
     </button>
   );

@@ -85,7 +85,9 @@ export async function fetchTokenLogos(addresses: string[]): Promise<Record<strin
     // ---- pass 1: DexScreener ------------------------------------------------
     let slug: string | null = null;
     try { slug = localStorage.getItem(SLUG_KEY); } catch { /* ok */ }
+    const wantedSet = new Set(missing);
     const found: Record<string, string> = {};
+    const responded = new Set<string>(); // addresses a source actually answered for
     for (const chunk of chunk30(missing)) {
       let pairs: DsPair[] | null = null;
       if (slug) {
@@ -101,10 +103,12 @@ export async function fetchTokenLogos(addresses: string[]): Promise<Record<strin
         }
         if (!slug) break;
       }
+      if (pairs !== null) for (const a of chunk) responded.add(a);
       for (const p of pairs ?? []) {
         const base = p.baseToken?.address?.toLowerCase();
         const img = p.info?.imageUrl;
-        if (base && img && !found[base]) found[base] = img;
+        // only map onto addresses we asked about — never cross-contaminate
+        if (base && img && wantedSet.has(base) && !found[base]) found[base] = img;
       }
     }
 
@@ -123,20 +127,20 @@ export async function fetchTokenLogos(addresses: string[]): Promise<Record<strin
           }
           if (!network) break;
         }
+        if (tokens !== null) for (const a of chunk) responded.add(a);
         for (const t of tokens ?? []) {
           const addr = t.attributes?.address?.toLowerCase();
           const img = t.attributes?.image_url;
-          if (addr && img && !/missing\.png/.test(img) && !found[addr]) found[addr] = img;
+          if (addr && img && wantedSet.has(addr) && !/missing\.png/.test(img) && !found[addr]) found[addr] = img;
         }
       }
     }
 
-    // Cache positives, and negatives ONLY if at least one source was reachable
-    // (a fully failed run must not poison 24h of lookups).
-    const anySource = Object.keys(found).length > 0 || slug !== null;
+    // Positives always cached; negatives ONLY for addresses a source actually
+    // answered for — network failures never poison the 24h cache.
     for (const a of missing) {
       if (found[a]) cache.map[a] = found[a];
-      else if (anySource) cache.map[a] = "";
+      else if (responded.has(a)) cache.map[a] = "";
     }
     writeCache(cache);
     return cache.map;

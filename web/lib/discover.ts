@@ -246,5 +246,5 @@ async function scan(client: PublicClient): Promise<PoolsSnapshot> {
 /** Token list for the picker — deepest liquidity first. */
 export async function discoverOnchainTokens(client: PublicClient): Promise<TokenInfo[]> {
   const snap = await discoverPools(client);
-  return snap.pools.map((p) => p.token);
+  return snap.pools.map((p) => ({ ...p.token, tvlUsd: p.tvlUsd }));
 }
