@@ -373,8 +373,8 @@ export function SwapCard() {
           </div>
           {hasRobinfunLeg ? (
             <p className="border-t border-stratum/60 pt-1.5 text-amber">
-              Robinfun token: a creator levy (0–10%) is taken on transfer. Actual
-              receipt can be below the estimate — set slippage above the levy.
+              Launchpad token: a creator levy (0–10%) may be taken on transfer.
+              Actual receipt can be below the estimate — set slippage above the levy.
             </p>
           ) : null}
         </div>
@@ -390,7 +390,7 @@ export function SwapCard() {
 
       <p className="mt-3 font-mono text-[10.5px] leading-relaxed text-silt-dark">
         Routed through canonical Uniswap v2 on Robinhood Chain, fee-on-transfer safe.
-        Tokens still on their Robinfun bonding curve have no pool here yet.
+        Tokens still on their launch bonding curve have no pool here yet.
       </p>
 
       <TokenSelect

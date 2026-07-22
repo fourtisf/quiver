@@ -155,7 +155,7 @@ export function TokenSelect({
         </div>
         {robinfun.length === 0 ? (
           <p className="mt-3 border-t border-stratum/60 pt-3 font-mono text-[11px] text-silt-dark">
-            Robinfun token list unreachable — core tokens + address paste still work.
+            Launchpad token list unreachable — core tokens + address paste still work.
           </p>
         ) : null}
       </div>
@@ -183,7 +183,7 @@ function TokenRow({
         <span className="block text-xs text-silt">{token.name}</span>
       </span>
       <span className="ml-auto font-mono text-[11px] text-silt-dark">
-        {note ?? (token.robinfun ? "robinfun" : token.address === "native" ? "" : shortAddr(token.address))}
+        {note ?? (token.robinfun ? "launchpad" : token.address === "native" ? "" : shortAddr(token.address))}
       </span>
     </button>
   );

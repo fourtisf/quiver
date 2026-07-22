@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>HOODPOOL — Liquidity for Robinfun tokens on Robinhood Chain</title>
+<title>HOODPOOL — Liquidity for Robinhood Chain tokens on Robinhood Chain</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23050E10'/%3E%3Cpath d='M16 6c-4 5-6 8-6 11a6 6 0 0 0 12 0c0-3-2-6-6-11z' fill='%233FE0AE'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -757,7 +757,7 @@ body.in #view-pools .pool-table{animation:fadeUp .65s .26s var(--ease) both}
       <button class="tab" data-view="docs">Docs</button>
     </div>
     <div class="nav-right">
-      <span class="hpl-chip"><span class="coin coin-xs" style="--c:#3FE0AE"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8C9.1 7.9 7.7 10.4 7.7 13a4.3 4.3 0 0 0 8.6 0c0-2.6-1.4-5.1-4.3-9.2z"/></svg></span>$HPL <b>$0.0384</b> <span class="up">+6.2%</span></span>
+      <span class="hpl-chip"><span class="coin coin-xs" style="--c:#3FE0AE"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.8C9.1 7.9 7.7 10.4 7.7 13a4.3 4.3 0 0 0 8.6 0c0-2.6-1.4-5.1-4.3-9.2z"/></svg></span>$HPL <b>CA coming soon</b></span>
       <button class="btn btn-ghost btn-sm" id="walletBtn">Connect wallet</button>
     </div>
   </div>
@@ -775,9 +775,9 @@ body.in #view-pools .pool-table{animation:fadeUp .65s .26s var(--ease) both}
   <section class="view active" id="view-pools">
     <div class="view-head">
       <div>
-        <span class="eyebrow">Liquidity layer · Robinfun launchpad</span>
+        <span class="eyebrow">Liquidity layer · launchpad</span>
         <h1>Pools</h1>
-        <p class="view-sub">One click to deploy liquidity for Robinfun tokens. Earn 1% on every trade. Search by symbol, or paste a Robinfun token address to find every pool for it.</p>
+        <p class="view-sub">One click to deploy liquidity for Robinhood Chain tokens. Earn 1% on every trade. Search by symbol, or paste a Robinhood Chain token address to find every pool for it.</p>
       </div>
       <button class="btn btn-primary" data-goto="create">+ Create pool</button>
     </div>
@@ -786,7 +786,7 @@ body.in #view-pools .pool-table{animation:fadeUp .65s .26s var(--ease) both}
       <div class="stat"><div class="stat-label">Total value locked</div><div class="stat-val" id="svTvl">$0.00M</div><div class="stat-sub up">+4.8% today</div></div>
       <div class="stat"><div class="stat-label">24h volume</div><div class="stat-val" id="svVol">$0.0K</div><div class="stat-sub"><span class="livedot"></span>across 128 pools</div></div>
       <div class="stat"><div class="stat-label">24h fees to LPs</div><div class="stat-val" id="svFees">$0</div><div class="stat-sub up">1% of every swap</div></div>
-      <div class="stat"><div class="stat-label">Tokens verified</div><div class="stat-val" id="svTok">0</div><div class="stat-sub">via RobinfunFactory</div></div>
+      <div class="stat"><div class="stat-label">Tokens verified</div><div class="stat-val" id="svTok">0</div><div class="stat-sub">via LaunchFactory</div></div>
     </div>
 
     <div class="toolbar">
@@ -822,7 +822,7 @@ body.in #view-pools .pool-table{animation:fadeUp .65s .26s var(--ease) both}
       <div>
         <span class="eyebrow">Single transaction · Uniswap v4 settlement</span>
         <h1>Create pool</h1>
-        <p class="view-sub">Deploy a trading pool for any Robinfun token. Fee taken, liquidity minted, position NFT in your wallet — one transaction, nothing custodied.</p>
+        <p class="view-sub">Deploy a trading pool for any Robinhood Chain token. Fee taken, liquidity minted, position NFT in your wallet — one transaction, nothing custodied.</p>
       </div>
     </div>
 
@@ -830,12 +830,12 @@ body.in #view-pools .pool-table{animation:fadeUp .65s .26s var(--ease) both}
       <div>
         <!-- Step 1 -->
         <div class="step glass on" id="step1">
-          <div class="step-head"><span class="step-num">1</span><span class="step-title">Verify token</span><span class="step-sub" id="s1sub">RobinfunFactory check</span></div>
+          <div class="step-head"><span class="step-num">1</span><span class="step-title">Verify token</span><span class="step-sub" id="s1sub">LaunchFactory check</span></div>
           <div class="step-body">
             <div class="field">
-              <label for="tokenAddr">Robinfun token address</label>
+              <label for="tokenAddr">Robinhood Chain token address</label>
               <input class="input" id="tokenAddr" placeholder="0x…" autocomplete="off" spellcheck="false">
-              <div class="hint">Only tokens launched on Robinfun can list here. <button id="sampleAddr" type="button">Use a sample address</button></div>
+              <div class="hint">Only tokens launched on Robinhood Chain can list here. <button id="sampleAddr" type="button">Use a sample address</button></div>
             </div>
             <div id="verifyResult"></div>
           </div>
@@ -852,7 +852,7 @@ body.in #view-pools .pool-table{animation:fadeUp .65s .26s var(--ease) both}
                 <button class="pair-btn" data-pair="ETH">ETH<small>native</small></button>
                 <button class="pair-btn" data-pair="USDG">USDG<small>stable</small></button>
               </div>
-              <div class="hint">Swap fee is fixed at 1% — every trade pays your position. Protocol takes 0.1% of deposits, routed to $HPL.</div>
+              <div class="hint">Swap fee is fixed at 1% — every trade pays your position. Protocol takes 0.1% of deposits, routed to the treasury.</div>
             </div>
           </div>
         </div>
@@ -924,7 +924,7 @@ body.in #view-pools .pool-table{animation:fadeUp .65s .26s var(--ease) both}
   <section class="view" id="view-swap">
     <div class="view-head">
       <div>
-        <span class="eyebrow">ETH · WETH · USDG · every Robinfun token</span>
+        <span class="eyebrow">ETH · WETH · USDG · every Robinhood Chain token</span>
         <h1>Swap</h1>
         <p class="view-sub">Routed through Hoodpool pools on Uniswap v4 settlement. Quotes read live from the chain.</p>
       </div>
@@ -1019,7 +1019,7 @@ body.in #view-pools .pool-table{animation:fadeUp .65s .26s var(--ease) both}
         <h3>Breakdown</h3>
         <div class="pf-mini">
           <div class="stat"><div class="stat-label">LP positions</div><div class="stat-val">$24,318</div><div class="stat-sub">4 positions</div></div>
-          <div class="stat"><div class="stat-label">Wallet</div><div class="stat-val">$7,524</div><div class="stat-sub">ETH · USDG · $HPL</div></div>
+          <div class="stat"><div class="stat-label">Wallet</div><div class="stat-val">$7,524</div><div class="stat-sub">ETH · USDG</div></div>
           <div class="stat"><div class="stat-label">Uncollected fees</div><div class="stat-val up">$693.46</div><div class="stat-sub">collect any time</div></div>
           <div class="stat"><div class="stat-label">Lifetime fees earned</div><div class="stat-val up">$4,318.55</div><div class="stat-sub">since first deposit</div></div>
         </div>
@@ -1051,8 +1051,8 @@ body.in #view-pools .pool-table{animation:fadeUp .65s .26s var(--ease) both}
     <div class="docs-grid">
       <div class="card glass">
         <h3>What is Hoodpool?</h3>
-        <p>Hoodpool is the liquidity layer for the <b style="color:var(--foam)">Robinfun launchpad</b> on Robinhood Chain. Robinfun is where tokens are born — Hoodpool is where their liquidity goes to work. Every token is verified on-chain against the RobinfunFactory: if it wasn't launched on Robinfun, it doesn't appear here.</p>
-        <div class="flow-line">Launch on <b>Robinfun</b> → deploy liquidity on <b>Hoodpool</b> → lock LP in <span class="lock">Strongroom</span></div>
+        <p>Hoodpool is the liquidity layer for the <b style="color:var(--foam)">launchpad</b> on Robinhood Chain. Robinhood Chain is where tokens are born — Hoodpool is where their liquidity goes to work. Every token is verified on-chain against the LaunchFactory: if it wasn't launched on Robinhood Chain, it doesn't appear here.</p>
+        <div class="flow-line">Launch on <b>Robinhood Chain</b> → deploy liquidity on <b>Hoodpool</b> → lock LP in <span class="lock">Strongroom</span></div>
       </div>
       <div class="card glass">
         <h3>Nobody holds your funds</h3>
@@ -1065,7 +1065,7 @@ body.in #view-pools .pool-table{animation:fadeUp .65s .26s var(--ease) both}
       </div>
       <div class="card glass">
         <h3>Fees, simply</h3>
-        <p>Every swap pays a <b style="color:var(--foam)">1% fee</b> that goes to the pool's LPs — that's you. The protocol takes <b style="color:var(--foam)">0.1% of deposits</b>, routed to $HPL. That's the whole model.</p>
+        <p>Every swap pays a <b style="color:var(--foam)">1% fee</b> that goes to the pool's LPs — that's you. The protocol takes <b style="color:var(--foam)">0.1% of deposits</b>, routed to the treasury. That's the whole model.</p>
         <p style="margin-top:10px">Take-profit and stop-loss orders execute <b style="color:var(--foam)">on-chain via keepers</b> — they can trigger while you sleep, and they never require handing over your position.</p>
       </div>
       <div class="card glass">
@@ -1074,8 +1074,8 @@ body.in #view-pools .pool-table{animation:fadeUp .65s .26s var(--ease) both}
           <div class="addr-line"><span>HoodpoolRouter</span><b>0x4Qf1…88Ae ⧉</b></div>
           <div class="addr-line"><span>PoolDeployer</span><b>0x9bD0…41C7 ⧉</b></div>
           <div class="addr-line"><span>TP/SL Executor</span><b>0xE5a2…9F03 ⧉</b></div>
-          <div class="addr-line"><span>RobinfunFactory (read)</span><b>0xR0b1…F4N0 ⧉</b></div>
-          <div class="addr-line"><span>$HPL</span><b>0x84aF…D211 ⧉</b></div>
+          <div class="addr-line"><span>LaunchFactory (read)</span><b>0xR0b1…F4N0 ⧉</b></div>
+          <div class="addr-line"><span>$HPL</span><b>CA coming soon</b></div>
         </div>
         <p style="margin-top:10px">Settlement runs on canonical Uniswap v3/v4 core — the most battle-tested AMM contracts in existence. Hoodpool adds pool creation, zap-in routing, TP/SL execution and the fee engine on top.</p>
       </div>
@@ -1089,7 +1089,7 @@ body.in #view-pools .pool-table{animation:fadeUp .65s .26s var(--ease) both}
     <b>HOODPOOL</b><span class="sep">·</span>
     <span>Non-custodial</span><span class="sep">·</span>
     <span>No admin keys</span><span class="sep">·</span>
-    <span>Verified via RobinfunFactory</span><span class="sep">·</span>
+    <span>Verified via LaunchFactory</span><span class="sep">·</span>
     <span>Settlement on Uniswap v3/v4</span><span class="sep">·</span>
     <span>Prototype — mock data, no real transactions</span>
   </div>
@@ -1168,7 +1168,7 @@ const PF=[
   {name:'TENDIES / USDG',id:'#39554',val:6020,entry:7100,fees:986.44},
   {name:'HOODIE / WETH',id:'#44018',val:2618,entry:2400,fees:238.12},
   {name:'DIAMOND / WETH',id:'#37761 · external',val:3200,entry:2650,fees:1681.79},
-  {name:'Wallet balances',id:'ETH · USDG · HPL',val:7524,entry:null,fees:null}
+  {name:'Wallet balances',id:'ETH · USDG',val:7524,entry:null,fees:null}
 ];
 
 /* =============== helpers =============== */
@@ -1271,14 +1271,14 @@ function setPairSym(){
 }
 function verifyAddr(addr){
   const box=$('#verifyResult');
-  box.innerHTML='<div class="verify-card"><span class="badge badge-warn">Checking RobinfunFactory…</span></div>';
+  box.innerHTML='<div class="verify-card"><span class="badge badge-warn">Checking LaunchFactory…</span></div>';
   setTimeout(()=>{
     const hit=Object.values(TOKENS).find(t=>t.addr&&t.addr.toLowerCase()===addr.toLowerCase());
     if(hit){
       C.tok=hit.sym;
       box.innerHTML='<div class="verify-card ok">'+coin(hit.sym)+
         '<div class="meta"><div class="t-name">$'+hit.sym+' — '+hit.name+'</div>'+
-        '<div class="t-sub">Launched on Robinfun · supply 1.00B · spot '+px(hit.price)+'</div></div>'+
+        '<div class="t-sub">Launched on Robinhood Chain · supply 1.00B · spot '+px(hit.price)+'</div></div>'+
         '<span class="badge badge-ok">✓ Verified</span></div>';
       $('#s1sub').textContent='verified on-chain';
       $('#depSymA').innerHTML=coin(hit.sym)+' '+hit.sym;
@@ -1286,8 +1286,8 @@ function verifyAddr(addr){
       setStepStates();updateReview();
     }else{
       C.tok=null;
-      box.innerHTML='<div class="verify-card"><div class="meta"><div class="t-name">Not a Robinfun token</div>'+
-        '<div class="t-sub">This address is not in the RobinfunFactory. Only Robinfun launches can list here.</div></div>'+
+      box.innerHTML='<div class="verify-card"><div class="meta"><div class="t-name">Not a Robinhood Chain token</div>'+
+        '<div class="t-sub">This address is not in the LaunchFactory. Only Robinhood Chain launches can list here.</div></div>'+
         '<span class="badge badge-err">✕ Rejected</span></div>';
       setStepStates();updateReview();
     }
@@ -1628,12 +1628,12 @@ function openPool(p){
     '</div>'+
     '<div class="dr-actions"><button class="btn btn-primary" id="drAdd">Add liquidity</button><button class="btn btn-ghost" id="drSwap">Swap '+p.tok+'</button></div>'+
     '<div class="dr-sec">Recent swaps</div>'+genTx(p)+
-    '<div class="dr-links"><button id="drRf">View launch on Robinfun ⧉</button><button id="drEx">Explorer ⧉</button></div>';
+    '<div class="dr-links"><button id="drRf">View launch on Robinhood Chain ⧉</button><button id="drEx">Explorer ⧉</button></div>';
   $('#drawerWrap').classList.add('open');
   $('#drClose').onclick=closeDrawer;
   $('#drAdd').onclick=()=>{closeDrawer();prefillCreate(p.tok)};
   $('#drSwap').onclick=()=>{S.out=p.tok;if(S.in===p.tok)S.in='USDG';closeDrawer();renderSel();go('swap')};
-  $('#drRf').onclick=()=>toast('Opens the '+p.tok+' launch page on Robinfun');
+  $('#drRf').onclick=()=>toast('Opens the '+p.tok+' launch page on Robinhood Chain');
   $('#drEx').onclick=()=>toast('Opens the pool contract on the Robinhood Chain explorer');
 }
 function closeDrawer(){$('#drawerWrap').classList.remove('open')}
