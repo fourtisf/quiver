@@ -1,26 +1,37 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { orbColor, type TokenInfo } from "@/lib/tokens";
+import { cachedSlug } from "@/lib/logos";
 
 export function TokenLogo({ token, size = 28 }: { token: TokenInfo; size?: number }) {
-  const [failed, setFailed] = useState(false);
-
-  // a new token (or a new logo URL) deserves a fresh attempt
-  useEffect(() => {
-    setFailed(false);
+  // ordered candidates: explicit logo -> DexScreener CDN guess -> orb fallback
+  const candidates = useMemo(() => {
+    const list: string[] = [];
+    if (token.logoURI) list.push(token.logoURI);
+    if (token.address !== "native" && /^0x[a-fA-F0-9]{40}$/.test(token.address)) {
+      const slug = typeof window !== "undefined" ? cachedSlug() : null;
+      if (slug) {
+        list.push(`https://dd.dexscreener.com/ds-data/tokens/${slug}/${token.address.toLowerCase()}.png?size=lg`);
+      }
+    }
+    return list;
   }, [token.address, token.logoURI]);
 
-  if (token.logoURI && !failed) {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => { setIdx(0); }, [token.address, token.logoURI]);
+
+  if (idx < candidates.length) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
-        src={token.logoURI}
+        src={candidates[idx]}
         alt=""
         width={size}
         height={size}
-        className="rounded-full ring-2 ring-ink-2"
-        onError={() => setFailed(true)}
+        className="rounded-full ring-2 ring-ink-2 object-cover"
+        style={{ width: size, height: size }}
+        onError={() => setIdx((i) => i + 1)}
       />
     );
   }

@@ -122,11 +122,25 @@ let inflight: Promise<PoolsSnapshot> | null = null;
 export async function discoverPools(client: PublicClient, force = false): Promise<PoolsSnapshot> {
   if (!force) {
     const cached = readCache();
-    if (cached) return cached;
+    if (cached) return attachLogos(cached);
   }
-  if (inflight) return inflight;
-  inflight = scan(client).finally(() => { inflight = null; });
-  return inflight;
+  if (!inflight) {
+    inflight = scan(client).finally(() => { inflight = null; });
+  }
+  return attachLogos(await inflight);
+}
+
+/** Best-effort real logos from DexScreener; orbs remain for the rest. */
+async function attachLogos(snap: PoolsSnapshot): Promise<PoolsSnapshot> {
+  try {
+    const { fetchTokenLogos } = await import("./logos");
+    const map = await fetchTokenLogos(snap.pools.map((p) => p.token.address));
+    for (const p of snap.pools) {
+      const url = map[p.token.address.toLowerCase()];
+      if (url && !p.token.logoURI) p.token.logoURI = url;
+    }
+  } catch { /* logos are decoration — never fail discovery over them */ }
+  return snap;
 }
 
 async function scan(client: PublicClient): Promise<PoolsSnapshot> {
