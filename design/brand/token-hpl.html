@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:512px;height:512px;background:transparent;overflow:hidden}
+.coin{
+  position:absolute;left:10px;top:10px;width:492px;height:492px;border-radius:50%;
+  background:
+    radial-gradient(300px 300px at 33% 26%, rgba(255,255,255,.15), transparent 46%),
+    radial-gradient(360px 360px at 68% 82%, rgba(63,224,174,.15), transparent 58%),
+    linear-gradient(155deg,#12292E 0%,#0A1A1E 52%,#0E2227 100%);
+  box-shadow:
+    0 0 0 3px rgba(111,245,203,.4),
+    0 0 0 13px rgba(9,20,23,1),
+    0 0 0 16px rgba(111,245,203,.2);
+  display:flex;align-items:center;justify-content:center;
+}
+.coin::before{
+  content:"";position:absolute;inset:26px;border-radius:50%;
+  border:2px dashed rgba(111,245,203,.22);
+}
+.coin::after{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  background:linear-gradient(200deg, rgba(255,255,255,.10), transparent 36%);
+}
+.coin svg{width:266px;height:266px;filter:drop-shadow(0 0 30px rgba(63,224,174,.5))}
+</style></head>
+<body>
+<div class="coin">
+  <svg viewBox="0 0 32 32">
+    <defs>
+      <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#7DF7D1"/><stop offset="1" stop-color="#2FCB9A"/>
+      </linearGradient>
+      <linearGradient id="chl" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FFFFFF" stop-opacity=".6"/>
+        <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="M16 4.6c-4.6 5.8-6.9 9.2-6.9 12.6a6.9 6.9 0 0 0 13.8 0c0-3.4-2.3-6.8-6.9-12.6z" fill="url(#cg)"/>
+    <path d="M12.2 15.4c.5-2.3 1.8-4.9 3.8-7.8-3 4.1-4.5 6.9-4.8 9.3-.1 1 .8 1 1 .1z" fill="url(#chl)"/>
+  </svg>
+</div>
+</body></html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+@font-face{
+  font-family:"Bricolage Grotesque";font-weight:800;
+  src:url("file:///tmp/claude-0/-home-user-quiver/a648b577-08fb-5d1d-bf07-f5e89479ceb4/scratchpad/node_modules/@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-800-normal.woff2") format("woff2");
+}
+@font-face{
+  font-family:"Albert Sans";font-weight:400;
+  src:url("file:///tmp/claude-0/-home-user-quiver/a648b577-08fb-5d1d-bf07-f5e89479ceb4/scratchpad/node_modules/@fontsource/albert-sans/files/albert-sans-latin-400-normal.woff2") format("woff2");
+}
+@font-face{
+  font-family:"Albert Sans";font-weight:600;
+  src:url("file:///tmp/claude-0/-home-user-quiver/a648b577-08fb-5d1d-bf07-f5e89479ceb4/scratchpad/node_modules/@fontsource/albert-sans/files/albert-sans-latin-600-normal.woff2") format("woff2");
+}
+@font-face{
+  font-family:"IBM Plex Mono";font-weight:500;
+  src:url("file:///tmp/claude-0/-home-user-quiver/a648b577-08fb-5d1d-bf07-f5e89479ceb4/scratchpad/node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2") format("woff2");
+}
+:root{
+  --ink:#050E10;--spring:#3FE0AE;--spring-bright:#6FF5CB;--spring-deep:#2FCB9A;
+  --limestone:#CBB891;--silt:#82989B;--silt-dark:#546A6D;--foam:#EDF7F4;--stratum:#1F393D;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1500px;height:500px;overflow:hidden}
+.stage{
+  position:relative;width:1500px;height:500px;color:var(--foam);
+  background:
+    radial-gradient(1050px 520px at 78% -16%, rgba(63,224,174,.17), transparent 60%),
+    radial-gradient(760px 480px at 2% 118%, rgba(203,184,145,.11), transparent 58%),
+    radial-gradient(600px 380px at 46% 128%, rgba(63,224,174,.06), transparent 65%),
+    linear-gradient(180deg,#0A181D 0%, var(--ink) 46%);
+}
+/* diagonal light beam */
+.beam{
+  position:absolute;left:34%;top:-40%;width:560px;height:180%;
+  background:linear-gradient(90deg, transparent, rgba(111,245,203,.05) 42%, rgba(111,245,203,.09) 50%, rgba(111,245,203,.05) 58%, transparent);
+  transform:rotate(24deg);
+}
+.stage::before{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(180deg, transparent 0 62px, rgba(130,152,155,.04) 62px 63px);
+}
+.stage::after{
+  content:"";position:absolute;inset:0;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.left{position:absolute;left:112px;top:50%;transform:translateY(-50%);z-index:3;max-width:760px}
+.brand{display:flex;align-items:center;gap:24px}
+.brand .tile{
+  width:86px;height:86px;border-radius:22px;position:relative;
+  background:linear-gradient(180deg,#0B1D21,#071316);
+  box-shadow:0 0 0 1.5px rgba(111,245,203,.28), 0 1px 0 rgba(255,255,255,.14) inset, 0 -8px 22px rgba(63,224,174,.12) inset, 0 22px 44px -18px rgba(0,0,0,.9), 0 0 46px -8px rgba(63,224,174,.35);
+  display:flex;align-items:center;justify-content:center;
+}
+.brand .tile svg{width:56px;height:56px;filter:drop-shadow(0 0 16px rgba(63,224,174,.55))}
+.wordmark{
+  font-family:"Bricolage Grotesque";font-weight:800;font-size:74px;letter-spacing:.13em;line-height:1;
+  background:linear-gradient(180deg,#FBFFFD 8%,#C9E6DC 52%,#8FBFB0 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.tagline{
+  font-family:"Albert Sans";font-weight:400;font-size:24px;color:var(--silt);
+  margin-top:20px;letter-spacing:.005em;
+}
+.tagline b{font-weight:600;color:var(--foam)}
+.tagline .hl{color:var(--spring-bright);font-weight:600}
+.chips{display:flex;gap:11px;margin-top:24px}
+.chip{
+  font-family:"IBM Plex Mono";font-weight:500;font-size:14px;padding:8px 17px;border-radius:99px;
+  color:var(--spring-bright);border:1px solid rgba(63,224,174,.3);
+  background:linear-gradient(180deg, rgba(63,224,174,.12), rgba(63,224,174,.04));
+  box-shadow:0 1px 0 rgba(255,255,255,.08) inset;
+}
+.chip.gold{
+  color:var(--limestone);border-color:rgba(203,184,145,.32);
+  background:linear-gradient(180deg, rgba(203,184,145,.12), rgba(203,184,145,.04));
+}
+/* ---- hero coin ---- */
+.coinwrap{position:absolute;right:150px;top:50%;transform:translateY(-50%);z-index:2}
+.coin{
+  position:relative;width:330px;height:330px;border-radius:50%;
+  background:
+    radial-gradient(190px 190px at 33% 26%, rgba(255,255,255,.16), transparent 46%),
+    radial-gradient(240px 240px at 68% 82%, rgba(63,224,174,.14), transparent 58%),
+    linear-gradient(155deg,#12292E 0%,#0A1A1E 52%,#0E2227 100%);
+  box-shadow:
+    0 0 0 2px rgba(111,245,203,.35),
+    0 0 0 9px rgba(9,20,23,.9),
+    0 0 0 10.5px rgba(111,245,203,.16),
+    0 34px 70px -22px rgba(0,0,0,.9),
+    0 0 90px -14px rgba(63,224,174,.4);
+  display:flex;align-items:center;justify-content:center;
+}
+/* engraved ring text track */
+.coin::before{
+  content:"";position:absolute;inset:18px;border-radius:50%;
+  border:1.5px dashed rgba(111,245,203,.22);
+}
+.coin::after{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  background:linear-gradient(200deg, rgba(255,255,255,.10), transparent 34%);
+}
+.coin svg{width:172px;height:172px;filter:drop-shadow(0 0 26px rgba(63,224,174,.55)) drop-shadow(0 12px 22px rgba(0,0,0,.55))}
+/* small satellite coins */
+.sat{
+  position:absolute;border-radius:50%;
+  box-shadow:0 0 0 1.5px rgba(237,247,244,.14), 0 14px 30px -10px rgba(0,0,0,.85), 0 0 34px -10px rgba(63,224,174,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-family:"IBM Plex Mono";font-weight:500;color:#061114;
+}
+.sat.eth{
+  width:92px;height:92px;left:-46px;top:24px;font-size:15px;
+  background:radial-gradient(circle at 32% 26%, #CBD6F8, #5E77CF);
+}
+.sat.usdg{
+  width:74px;height:74px;right:-24px;bottom:34px;font-size:13px;
+  background:radial-gradient(circle at 32% 26%, #9DBCFF, #3E6FE0);
+}
+.reflect{
+  position:absolute;left:50%;bottom:-58px;transform:translateX(-50%);
+  width:300px;height:34px;border-radius:50%;
+  background:radial-gradient(closest-side, rgba(63,224,174,.24), transparent 72%);
+  filter:blur(6px);
+}
+.wave{position:absolute;left:0;right:0;bottom:32px;height:18px;opacity:.45;z-index:1}
+.site{
+  position:absolute;right:112px;bottom:24px;z-index:3;
+  font-family:"IBM Plex Mono";font-weight:500;font-size:15px;color:var(--silt);letter-spacing:.06em;
+}
+.site b{color:var(--spring)}
+</style></head>
+<body>
+<div class="stage">
+  <div class="beam"></div>
+
+  <div class="left">
+    <div class="brand">
+      <span class="tile">
+        <svg viewBox="0 0 32 32">
+          <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#6FF5CB"/><stop offset="1" stop-color="#2FCB9A"/>
+          </linearGradient></defs>
+          <path d="M16 5c-4.4 5.5-6.6 8.8-6.6 12.1a6.6 6.6 0 0 0 13.2 0C22.6 13.8 20.4 10.5 16 5z" fill="url(#g)"/>
+        </svg>
+      </span>
+      <span class="wordmark">HOODPOOL</span>
+    </div>
+    <div class="tagline">The liquidity layer of <b>Robinhood Chain</b> — earn <span class="hl">1% of every swap</span>.</div>
+    <div class="chips">
+      <span class="chip">SWAP LIVE</span>
+      <span class="chip">NON-CUSTODIAL TP/SL</span>
+      <span class="chip gold">0 ADMIN KEYS</span>
+    </div>
+  </div>
+
+  <div class="coinwrap">
+    <div class="coin">
+      <svg viewBox="0 0 32 32">
+        <defs>
+          <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#7DF7D1"/><stop offset="1" stop-color="#2FCB9A"/>
+          </linearGradient>
+          <linearGradient id="chl" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FFFFFF" stop-opacity=".6"/>
+            <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path d="M16 4.6c-4.6 5.8-6.9 9.2-6.9 12.6a6.9 6.9 0 0 0 13.8 0c0-3.4-2.3-6.8-6.9-12.6z" fill="url(#cg)"/>
+        <path d="M12.2 15.4c.5-2.3 1.8-4.9 3.8-7.8-3 4.1-4.5 6.9-4.8 9.3-.1 1 .8 1 1 .1z" fill="url(#chl)"/>
+      </svg>
+      <span class="sat eth">ETH</span>
+      <span class="sat usdg">USDG</span>
+    </div>
+    <div class="reflect"></div>
+  </div>
+
+  <svg class="wave" viewBox="0 0 1500 18" preserveAspectRatio="none">
+    <path d="M0 9 Q 47 1 94 9 T 188 9 T 282 9 T 376 9 T 470 9 T 564 9 T 658 9 T 752 9 T 846 9 T 940 9 T 1034 9 T 1128 9 T 1222 9 T 1316 9 T 1410 9 T 1504 9" fill="none" stroke="#3FE0AE" stroke-width="1.6" opacity=".7"/>
+  </svg>
+  <div class="site">hoodpool<b>.fun</b></div>
+</div>
+</body></html>
