@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { formatUnits, isAddress, parseUnits, type Address } from "viem";
+import { encodeFunctionData, formatUnits, isAddress, parseUnits, type Address } from "viem";
 import {
   useAccount,
   useBalance,
@@ -9,11 +9,11 @@ import {
   useReadContract,
   useWriteContract,
 } from "wagmi";
-import { erc20Abi, v2RouterAbi } from "@/lib/abis";
+import { erc20Abi, swapRouter02Abi, v2RouterAbi } from "@/lib/abis";
 import { ADDRESSES } from "@/lib/addresses";
 import { NATIVE_ETH, type TokenInfo } from "@/lib/tokens";
 import { discoverPools, getEthUsd } from "@/lib/discover";
-import { candidatePaths } from "@/lib/routes";
+import { bestRoute, routeLabel as fmtRoute, spenderFor, type Route } from "@/lib/quote";
 import { useQuery } from "@tanstack/react-query";
 import { fmtAmount } from "@/lib/format";
 import { TokenLogo } from "./TokenLogo";
@@ -22,6 +22,8 @@ import { useToasts } from "./Toasts";
 
 const SLIPPAGE_PRESETS = [0.5, 1, 3] as const;
 const DEADLINE_MINUTES = 10;
+const ADDRESS_THIS = "0x0000000000000000000000000000000000000002" as Address;
+const USDE_ADDR = "0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34".toLowerCase();
 
 function sameToken(a?: string, b?: string): boolean {
   return !!a && !!b && a.toLowerCase() === b.toLowerCase();
@@ -110,11 +112,11 @@ export function SwapCard() {
   }, [amountRaw, tokenIn.decimals]);
   const debouncedAmountIn = useDebounced(amountIn, 400);
 
-  const routes = useMemo(
-    () => (tokenOut ? candidatePaths(tokenIn, tokenOut) : []),
-    [tokenIn, tokenOut],
-  );
-  const degenerateRoute = tokenOut !== null && routes.length === 0;
+  const degenerateRoute =
+    tokenOut !== null && sameToken(
+      tokenIn.address === "native" ? ADDRESSES.weth : tokenIn.address,
+      tokenOut.address === "native" ? ADDRESSES.weth : tokenOut.address,
+    );
   const CORE = new Set(["native", ADDRESSES.weth.toLowerCase(), ADDRESSES.usdg.toLowerCase()]);
   const hasMemeLeg =
     !CORE.has(tokenIn.address.toLowerCase()) || (tokenOut !== null && !CORE.has(tokenOut.address.toLowerCase()));
@@ -131,60 +133,40 @@ export function SwapCard() {
   const balanceIn =
     tokenIn.address === "native" ? nativeBal.data?.value : (tokenInBal.data as bigint | undefined);
 
-  // ---- best-path quote (debounced): evaluate every candidate route --------
-  const routesKey = routes.map((p) => p.join(">")).join("|");
-  const bestQuote = useQuery({
-    queryKey: ["quote", routesKey, debouncedAmountIn?.toString() ?? ""],
-    enabled: Boolean(client && debouncedAmountIn && routes.length > 0),
+  // ---- best route quote (debounced): best of Uniswap v2 + v3 --------------
+  const quoteQuery = useQuery({
+    queryKey: ["route", tokenIn.address, tokenOut?.address, debouncedAmountIn?.toString() ?? ""],
+    enabled: Boolean(client && debouncedAmountIn && tokenOut && !degenerateRoute),
     refetchInterval: 15_000,
     retry: 1,
     queryFn: async () => {
-      const res = await client!.multicall({
-        contracts: routes.map((p) => ({
-          address: ADDRESSES.v2Router02 as Address,
-          abi: v2RouterAbi,
-          functionName: "getAmountsOut" as const,
-          args: [debouncedAmountIn!, p] as const,
-        })),
-        allowFailure: true,
-      });
-      let best: { path: Address[]; amounts: readonly bigint[] } | null = null;
-      for (let i = 0; i < res.length; i++) {
-        const r = res[i];
-        if (r.status !== "success") continue;
-        const amts = r.result as readonly bigint[];
-        const out = amts[amts.length - 1];
-        if (best === null || out > best.amounts[best.amounts.length - 1]) {
-          best = { path: routes[i], amounts: amts };
-        }
-      }
-      if (best === null) throw new Error("no route with liquidity");
-      return best;
+      const r = await bestRoute(client!, debouncedAmountIn!, tokenIn, tokenOut!);
+      if (!r) throw new Error("no route with liquidity");
+      return r;
     },
   });
   // only trust a quote whose input matches the current (debounced == live) amount
-  const freshQuote =
-    debouncedAmountIn === amountIn && !bestQuote.isError ? bestQuote.data : undefined;
-  const path = freshQuote?.path;
-  const amounts = freshQuote?.amounts;
-  const amountOut = amounts?.[amounts.length - 1];
+  const route: Route | undefined =
+    debouncedAmountIn === amountIn && !quoteQuery.isError ? quoteQuery.data : undefined;
+  const amountOut = route?.amountOut;
   const minOut =
     amountOut !== undefined
       ? (amountOut * BigInt(Math.round((100 - slippage) * 1000))) / 100_000n
       : undefined;
   const dustOutput = amountOut !== undefined && (amountOut === 0n || minOut === 0n);
 
-  // ---- allowance (ERC20 input only) --------------------------------------
+  // ---- allowance (ERC20 input only; spender depends on chosen route) -------
   const isErc20In = tokenIn.address !== "native";
+  const spender = (route ? spenderFor(route) : ADDRESSES.v2Router02) as Address;
   const allowance = useReadContract({
     address: isErc20In ? (tokenIn.address as Address) : undefined,
     abi: erc20Abi,
     functionName: "allowance",
-    args: account ? [account, ADDRESSES.v2Router02 as Address] : undefined,
+    args: account ? [account, spender] : undefined,
     query: { enabled: isConnected && isErc20In },
   });
   const allowanceUnknown =
-    isErc20In && amountIn !== null && allowance.data === undefined;
+    isErc20In && amountIn !== null && route !== undefined && allowance.data === undefined;
   const needsApproval =
     isErc20In &&
     amountIn !== null &&
@@ -199,17 +181,10 @@ export function SwapCard() {
     return `1 ${tokenIn.symbol} ≈ ${(outF / inF).toLocaleString("en-US", { maximumFractionDigits: 6 })} ${tokenOut.symbol}`;
   }, [debouncedAmountIn, amountOut, tokenIn, tokenOut]);
 
-  const routeLabel = useMemo(() => {
-    if (!path || !tokenOut) return "—";
-    if (path.length === 2) return "direct";
-    const mids = path.slice(1, -1).map((a) =>
-      a.toLowerCase() === ADDRESSES.weth.toLowerCase() ? "WETH"
-        : a.toLowerCase() === ADDRESSES.usdg.toLowerCase() ? "USDG" : "…");
-    return `${tokenIn.symbol} → ${mids.join(" → ")} → ${tokenOut.symbol}`;
-  }, [path, tokenIn, tokenOut]);
+  const routeLabel = fmtRoute(route, tokenIn.symbol, tokenOut?.symbol ?? "");
 
   const wrongNetwork = isConnected && chainId !== 4663;
-  const quoteFailed = Boolean(debouncedAmountIn && routes.length > 0 && bestQuote.isError);
+  const quoteFailed = Boolean(debouncedAmountIn && tokenOut && !degenerateRoute && quoteQuery.isError);
   const insufficient = amountIn !== null && balanceIn !== undefined && amountIn > balanceIn;
 
   function applyCustomSlip(v: string) {
@@ -242,7 +217,7 @@ export function SwapCard() {
       address: tokenIn.address as Address,
       abi: erc20Abi,
       functionName: "approve",
-      args: [ADDRESSES.v2Router02 as Address, value],
+      args: [spender, value], // v2 router or v3 SwapRouter02, per the chosen route
     });
     return waitToast(hash, `${label}…`, `${label} confirmed`);
   }
@@ -267,33 +242,51 @@ export function SwapCard() {
   }
 
   async function onSwap() {
-    if (!amountIn || !minOut || minOut === 0n || !path || !account || !tokenOut) return;
+    if (!amountIn || !minOut || minOut === 0n || !route || !account || !tokenOut) return;
     setBusy(true);
     const deadline = BigInt(Math.floor(Date.now() / 1000) + DEADLINE_MINUTES * 60);
     const label = `${fmtAmount(amountIn, tokenIn.decimals)} ${tokenIn.symbol} → ${tokenOut.symbol}`;
     try {
       let hash: `0x${string}`;
-      if (tokenIn.address === "native") {
-        hash = await writeContractAsync({
-          address: ADDRESSES.v2Router02 as Address,
-          abi: v2RouterAbi,
-          functionName: "swapExactETHForTokensSupportingFeeOnTransferTokens",
-          args: [minOut, path, account, deadline],
-          value: amountIn,
-        });
-      } else if (tokenOut.address === "native") {
-        hash = await writeContractAsync({
-          address: ADDRESSES.v2Router02 as Address,
-          abi: v2RouterAbi,
-          functionName: "swapExactTokensForETHSupportingFeeOnTransferTokens",
-          args: [amountIn, minOut, path, account, deadline],
-        });
+      if (route.kind === "v2") {
+        const path = route.path;
+        if (tokenIn.address === "native") {
+          hash = await writeContractAsync({
+            address: ADDRESSES.v2Router02 as Address, abi: v2RouterAbi,
+            functionName: "swapExactETHForTokensSupportingFeeOnTransferTokens",
+            args: [minOut, path, account, deadline], value: amountIn,
+          });
+        } else if (tokenOut.address === "native") {
+          hash = await writeContractAsync({
+            address: ADDRESSES.v2Router02 as Address, abi: v2RouterAbi,
+            functionName: "swapExactTokensForETHSupportingFeeOnTransferTokens",
+            args: [amountIn, minOut, path, account, deadline],
+          });
+        } else {
+          hash = await writeContractAsync({
+            address: ADDRESSES.v2Router02 as Address, abi: v2RouterAbi,
+            functionName: "swapExactTokensForTokensSupportingFeeOnTransferTokens",
+            args: [amountIn, minOut, path, account, deadline],
+          });
+        }
       } else {
+        // Uniswap v3 via SwapRouter02, deadline enforced through multicall(deadline, …)
+        const ethOut = tokenOut.address === "native";
+        const params = {
+          tokenIn: route.tokenIn, tokenOut: route.tokenOut, fee: route.fee,
+          recipient: ethOut ? ADDRESS_THIS : account,
+          amountIn, amountOutMinimum: minOut, sqrtPriceLimitX96: 0n,
+        };
+        const calls: `0x${string}`[] = [
+          encodeFunctionData({ abi: swapRouter02Abi, functionName: "exactInputSingle", args: [params] }),
+        ];
+        if (ethOut) {
+          calls.push(encodeFunctionData({ abi: swapRouter02Abi, functionName: "unwrapWETH9", args: [minOut, account] }));
+        }
         hash = await writeContractAsync({
-          address: ADDRESSES.v2Router02 as Address,
-          abi: v2RouterAbi,
-          functionName: "swapExactTokensForTokensSupportingFeeOnTransferTokens",
-          args: [amountIn, minOut, path, account, deadline],
+          address: ADDRESSES.v3SwapRouter02 as Address, abi: swapRouter02Abi,
+          functionName: "multicall", args: [deadline, calls],
+          value: tokenIn.address === "native" ? amountIn : undefined,
         });
       }
       const ok = await waitToast(hash, `Swapping ${label}…`, `Swapped ${label}`);
@@ -329,30 +322,27 @@ export function SwapCard() {
     setSelecting(null);
   }
 
-  // ---- USD approximations via the WETH leg + WETH/USDG mid price ---------
+  // ---- USD: price the core leg (ETH/WETH via ethUsd, stables at $1), then
+  // the swap's dollar size carries to the other side (≈ equal, minus fees) ---
   const wethLower = ADDRESSES.weth.toLowerCase();
   const usdgLower = ADDRESSES.usdg.toLowerCase();
-  function usdOfWeth(amount: bigint | undefined): number | null {
-    if (amount === undefined || ethUsd === null) return null;
-    return Number(formatUnits(amount, 18)) * ethUsd;
-  }
-  const wethIdx = path ? path.findIndex((a) => a.toLowerCase() === wethLower) : -1;
-  const usdgIdx = path ? path.findIndex((a) => a.toLowerCase() === usdgLower) : -1;
-  const wethLegAmt = amounts && wethIdx >= 0 ? amounts[wethIdx] : undefined;
-  const usdgLegAmt = amounts && usdgIdx >= 0 ? amounts[usdgIdx] : undefined;
-  function usdFor(token: TokenInfo | null, amount: bigint | undefined): string | undefined {
-    if (!token || amount === undefined) return undefined;
-    let v: number | null = null;
+  function priceCore(token: TokenInfo | null, amount: bigint | undefined): number | null {
+    if (!token || amount === undefined) return null;
     const addr = token.address.toLowerCase();
-    if (token.address === "native" || addr === wethLower) v = usdOfWeth(amount);
-    else if (addr === usdgLower) v = Number(formatUnits(amount, 6));
-    else if (usdgLegAmt !== undefined) v = Number(formatUnits(usdgLegAmt, 6)); // USDG-routed
-    else v = usdOfWeth(wethLegAmt);
-    if (v === null || !Number.isFinite(v)) return undefined;
-    return `≈ $${v.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+    if (token.address === "native" || addr === wethLower) {
+      return ethUsd === null ? null : Number(formatUnits(amount, 18)) * ethUsd;
+    }
+    if (addr === usdgLower) return Number(formatUnits(amount, 6));
+    if (addr === USDE_ADDR) return Number(formatUnits(amount, 18));
+    return null; // not a directly-priceable token
   }
-  const usdPay = usdFor(tokenIn, amountIn ?? undefined);
-  const usdReceive = usdFor(tokenOut, amountOut);
+  const usdIn = priceCore(tokenIn, amountIn ?? undefined);
+  const usdOut = priceCore(tokenOut, amountOut);
+  const usdSize = usdIn ?? usdOut; // dollar size of the swap from whichever side is core
+  const fmtUsdVal = (v: number | null): string | undefined =>
+    v !== null && Number.isFinite(v) ? `≈ $${v.toLocaleString("en-US", { maximumFractionDigits: 2 })}` : undefined;
+  const usdPay = fmtUsdVal(usdIn ?? usdSize);
+  const usdReceive = fmtUsdVal(usdOut ?? usdSize);
 
   const action = !isConnected
     ? { label: "Connect a wallet to swap", disabled: true }
@@ -486,7 +476,7 @@ export function SwapCard() {
       </button>
 
       <p className="mt-3 font-mono text-[10.5px] leading-relaxed text-silt-dark">
-        Routed through canonical Uniswap v2 on Robinhood Chain, fee-on-transfer safe.
+        Auto-routed across Uniswap v2 &amp; v3 on Robinhood Chain, fee-on-transfer safe.
         Tokens still on their launch bonding curve have no pool here yet.
       </p>
 

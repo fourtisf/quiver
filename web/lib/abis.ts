@@ -61,6 +61,58 @@ export const v2RouterAbi = [
   },
 ] as const;
 
+/** Uniswap v3 QuoterV2 — quote fns are nonpayable on-chain but eth_call-able;
+ * declared `view` here so viem will read them (multicall-compatible). */
+export const quoterV2Abi = [
+  {
+    type: "function", name: "quoteExactInputSingle", stateMutability: "view",
+    inputs: [{
+      type: "tuple", name: "params", components: [
+        { name: "tokenIn", type: "address" },
+        { name: "tokenOut", type: "address" },
+        { name: "amountIn", type: "uint256" },
+        { name: "fee", type: "uint24" },
+        { name: "sqrtPriceLimitX96", type: "uint160" },
+      ],
+    }],
+    outputs: [
+      { name: "amountOut", type: "uint256" },
+      { name: "sqrtPriceX96After", type: "uint160" },
+      { name: "initializedTicksCrossed", type: "uint32" },
+      { name: "gasEstimate", type: "uint256" },
+    ],
+  },
+] as const;
+
+/** Uniswap v3 SwapRouter02 (no per-call deadline; wrap in multicall(deadline,...)). */
+export const swapRouter02Abi = [
+  {
+    type: "function", name: "exactInputSingle", stateMutability: "payable",
+    inputs: [{
+      type: "tuple", name: "params", components: [
+        { name: "tokenIn", type: "address" },
+        { name: "tokenOut", type: "address" },
+        { name: "fee", type: "uint24" },
+        { name: "recipient", type: "address" },
+        { name: "amountIn", type: "uint256" },
+        { name: "amountOutMinimum", type: "uint256" },
+        { name: "sqrtPriceLimitX96", type: "uint160" },
+      ],
+    }],
+    outputs: [{ name: "amountOut", type: "uint256" }],
+  },
+  {
+    type: "function", name: "unwrapWETH9", stateMutability: "payable",
+    inputs: [{ name: "amountMinimum", type: "uint256" }, { name: "recipient", type: "address" }],
+    outputs: [],
+  },
+  {
+    type: "function", name: "multicall", stateMutability: "payable",
+    inputs: [{ name: "deadline", type: "uint256" }, { name: "data", type: "bytes[]" }],
+    outputs: [{ name: "", type: "bytes[]" }],
+  },
+] as const;
+
 export const v2FactoryAbi = [
   {
     type: "function", name: "getPair", stateMutability: "view",

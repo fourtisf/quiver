@@ -15,9 +15,13 @@ const EXPECTED_CHAIN_ID = 4663;
 const ADDRESSES = {
   v2Router02: "0x89e5db8b5aa49aa85ac63f691524311aeb649eba",
   v2Factory: "0x8bceaa40b9acdfaedf85adf4ff01f5ad6517937f",
+  v3SwapRouter02: "0xcaf681a66d020601342297493863e78c959e5cb2",
+  v3QuoterV2: "0x33e885ed0ec9bf04ecfb19341582aadcb4c8a9e7",
   weth: "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
   usdg: "0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168",
 };
+
+const V3_FEE_TIERS = [100, 500, 3000, 10000];
 
 const erc20 = parseAbi([
   "function symbol() view returns (string)",
@@ -30,6 +34,11 @@ const router = parseAbi([
 ]);
 const factory = parseAbi([
   "function getPair(address, address) view returns (address)",
+]);
+// QuoterV2.quoteExactInputSingle is nonpayable on-chain but eth_call-able;
+// declared view here so viem will read it (matches web/lib/abis.ts).
+const quoterV2 = parseAbi([
+  "function quoteExactInputSingle((address tokenIn, address tokenOut, uint256 amountIn, uint24 fee, uint160 sqrtPriceLimitX96) params) view returns (uint256 amountOut, uint160 sqrtPriceX96After, uint32 initializedTicksCrossed, uint256 gasEstimate)",
 ]);
 
 const client = createPublicClient({
@@ -120,6 +129,36 @@ try {
   pass(`v2 factory reports ${nPairs} pairs (picker discovery source)`);
 } catch (e) {
   warn(`discovery diagnostic failed: ${e.shortMessage ?? e.message}`);
+}
+
+// 7. diagnostic: Uniswap v3 QuoterV2 answers a live single-hop quote.
+// Which fee tier holds WETH/USDG liquidity is market-dependent, so this is a
+// warn (not fatal) — the win condition is "at least one tier quotes non-zero",
+// proving the v3 router path the SwapCard uses is actually reachable.
+try {
+  let quoted = false;
+  for (const fee of V3_FEE_TIERS) {
+    try {
+      const [amountOut] = await client.readContract({
+        address: ADDRESSES.v3QuoterV2, abi: quoterV2, functionName: "quoteExactInputSingle",
+        args: [{
+          tokenIn: getAddress(ADDRESSES.weth), tokenOut: getAddress(ADDRESSES.usdg),
+          amountIn: 10n ** 18n, fee, sqrtPriceLimitX96: 0n,
+        }],
+      });
+      if (amountOut > 0n) {
+        pass(`LIVE v3 QUOTE @ ${fee / 10000}% fee: 1 WETH = ${formatUnits(amountOut, 6)} USDG`);
+        quoted = true;
+      }
+    } catch {
+      /* this tier has no pool — try the next */
+    }
+  }
+  if (!quoted) {
+    warn(`no WETH/USDG v3 pool at any fee tier — v3 routes appear only for pairs that do (QuoterV2 is live: bytecode checked above)`);
+  }
+} catch (e) {
+  warn(`v3 quote diagnostic failed: ${e.shortMessage ?? e.message}`);
 }
 
 console.log(failures === 0 ? "\nPreflight PASSED" : `\nPreflight FAILED (${failures} fatal)`);

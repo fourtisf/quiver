@@ -6,6 +6,7 @@ import { usePublicClient } from "wagmi";
 import { erc20Abi } from "@/lib/abis";
 import { CORE_TOKENS, type TokenInfo } from "@/lib/tokens";
 import { discoverOnchainTokens } from "@/lib/discover";
+import { fetchTopTokens } from "@/lib/gecko";
 import { TokenLogo } from "./TokenLogo";
 import { shortAddr } from "@/lib/format";
 
@@ -22,6 +23,7 @@ export function TokenSelect({
 }) {
   const [query, setQuery] = useState("");
   const [discovered, setDiscovered] = useState<TokenInfo[]>([]);
+  const [geckoTop, setGeckoTop] = useState<TokenInfo[]>([]);
   const [scanning, setScanning] = useState(false);
   const [resolved, setResolved] = useState<TokenInfo | null>(null);
   const [resolving, setResolving] = useState(false);
@@ -37,6 +39,11 @@ export function TokenSelect({
         .catch(() => { /* discovery is best-effort */ })
         .finally(() => { if (!cancelled) setScanning(false); });
     }
+    // Big-cap tokens whose liquidity is on Uniswap v3/v4 come from GeckoTerminal's
+    // top-pools feed (keyless, all-DEX) so the picker looks like Uniswap's.
+    fetchTopTokens()
+      .then((list) => { if (!cancelled) setGeckoTop(list); })
+      .catch(() => { /* best-effort */ });
     return () => { cancelled = true; };
   }, [open, client]);
 
@@ -74,15 +81,29 @@ export function TokenSelect({
     !!exclude && addr.toLowerCase() === exclude.toLowerCase();
 
   const list = useMemo(() => {
-    const seen = new Set(CORE_TOKENS.map((t) => t.address.toLowerCase()));
-    const merged = [...CORE_TOKENS];
-    for (const t of discovered) {
+    const coreKeys = new Set(CORE_TOKENS.map((t) => t.address.toLowerCase()));
+    // Merge the two discovery sources (on-chain v2 + GeckoTerminal v3/v4) into a
+    // single deduped set. On collision keep the deeper pool and prefer a real logo.
+    const extra = new Map<string, TokenInfo>();
+    for (const t of [...discovered, ...geckoTop]) {
       const key = t.address.toLowerCase();
-      if (!seen.has(key)) {
-        seen.add(key);
-        merged.push(t);
+      if (coreKeys.has(key)) continue;
+      const prev = extra.get(key);
+      if (!prev) {
+        extra.set(key, t);
+      } else {
+        extra.set(key, {
+          ...prev,
+          logoURI: prev.logoURI ?? t.logoURI,
+          tvlUsd: Math.max(prev.tvlUsd ?? 0, t.tvlUsd ?? 0) || prev.tvlUsd || t.tvlUsd,
+          name: prev.name || t.name,
+        });
       }
     }
+    const ranked = [...extra.values()].sort(
+      (a, b) => (b.tvlUsd ?? 0) - (a.tvlUsd ?? 0),
+    );
+    const merged = [...CORE_TOKENS, ...ranked];
     // flag repeated symbols: first occurrence (deepest pool) is trusted,
     // later ones are likely on-chain clones and get a warning badge
     const symbolSeen = new Set<string>();
@@ -102,7 +123,7 @@ export function TokenSelect({
         t.address.toLowerCase() === q,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [discovered, query, exclude]);
+  }, [discovered, geckoTop, query, exclude]);
 
   function selectVerified(t: TokenInfo) {
     onSelect(t); // discovered tokens carry on-chain-read decimals already
@@ -160,11 +181,11 @@ export function TokenSelect({
           ) : null}
         </div>
         <p className="mt-3 border-t border-stratum/60 pt-3 font-mono text-[11px] text-silt-dark">
-          {scanning
+          {scanning && discovered.length === 0 && geckoTop.length === 0
             ? "Scanning on-chain pools…"
-            : discovered.length > 0
-              ? `${discovered.length} tokens discovered from on-chain pools.`
-              : "On-chain scan found no extra pools — paste any token address to resolve it."}
+            : discovered.length + geckoTop.length > 0
+              ? `${list.length} tokens across Uniswap v2/v3 — paste any address to add more.`
+              : "No extra pools found — paste any token address to resolve it."}
         </p>
       </div>
     </div>
