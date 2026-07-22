@@ -88,11 +88,11 @@ export default function Shell({ tab, children }: { tab: TabKey; children: React.
             <a className="text-silt hover:text-spring" href="/docs/">docs</a> ·{" "}
             <a
               className="text-silt hover:text-spring"
-              href="https://x.com/r0b_hood"
+              href="https://x.com/Hoodpoolfun"
               rel="noopener noreferrer"
               target="_blank"
             >
-              X ⧉
+              @Hoodpoolfun ⧉
             </a>
           </footer>
         </div>

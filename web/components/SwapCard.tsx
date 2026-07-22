@@ -203,7 +203,7 @@ export function SwapCard() {
         text:
           receipt.status === "success"
             ? doneText
-            : "Transaction reverted on-chain (for Robinfun levy tokens, try higher slippage)",
+            : "Transaction reverted on-chain (for fee-on-transfer tokens, try higher slippage)",
       });
       return receipt.status === "success";
     } catch {

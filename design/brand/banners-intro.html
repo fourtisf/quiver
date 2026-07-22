@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+@font-face{font-family:"Bricolage Grotesque";font-weight:800;src:url("file:///tmp/claude-0/-home-user-quiver/a648b577-08fb-5d1d-bf07-f5e89479ceb4/scratchpad/node_modules/@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-800-normal.woff2") format("woff2");}
+@font-face{font-family:"Albert Sans";font-weight:400;src:url("file:///tmp/claude-0/-home-user-quiver/a648b577-08fb-5d1d-bf07-f5e89479ceb4/scratchpad/node_modules/@fontsource/albert-sans/files/albert-sans-latin-400-normal.woff2") format("woff2");}
+@font-face{font-family:"Albert Sans";font-weight:600;src:url("file:///tmp/claude-0/-home-user-quiver/a648b577-08fb-5d1d-bf07-f5e89479ceb4/scratchpad/node_modules/@fontsource/albert-sans/files/albert-sans-latin-600-normal.woff2") format("woff2");}
+@font-face{font-family:"IBM Plex Mono";font-weight:500;src:url("file:///tmp/claude-0/-home-user-quiver/a648b577-08fb-5d1d-bf07-f5e89479ceb4/scratchpad/node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2") format("woff2");}
+:root{
+  --ink:#050E10;--spring:#3FE0AE;--spring-bright:#6FF5CB;--spring-deep:#2FCB9A;
+  --limestone:#CBB891;--silt:#82989B;--silt-dark:#546A6D;--foam:#EDF7F4;--stratum:#1F393D;--rh:#00C805;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#03080a;padding:30px}
+.banner{
+  position:relative;width:1600px;height:900px;color:var(--foam);overflow:hidden;font-family:"Albert Sans";
+  background:
+    radial-gradient(1240px 660px at 80% -12%, rgba(63,224,174,.16), transparent 60%),
+    radial-gradient(940px 580px at -2% 116%, rgba(203,184,145,.09), transparent 58%),
+    radial-gradient(720px 460px at 42% 132%, rgba(63,224,174,.06), transparent 65%),
+    linear-gradient(180deg,#0A181D 0%, var(--ink) 54%);
+}
+.banner+.banner{margin-top:38px}
+.grid{position:absolute;inset:0;background:
+  repeating-linear-gradient(180deg, transparent 0 76px, rgba(130,152,155,.035) 76px 77px),
+  repeating-linear-gradient(90deg, transparent 0 76px, rgba(130,152,155,.022) 76px 77px);}
+.noise{position:absolute;inset:0;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");}
+.beam{position:absolute;left:38%;top:-40%;width:640px;height:180%;transform:rotate(24deg);
+  background:linear-gradient(90deg, transparent, rgba(111,245,203,.05) 42%, rgba(111,245,203,.09) 50%, rgba(111,245,203,.05) 58%, transparent);}
+/* top bar */
+.topbar{position:absolute;top:60px;left:92px;right:92px;display:flex;align-items:center;justify-content:space-between;z-index:6}
+.lockup{display:flex;align-items:center;gap:18px}
+.tile{width:64px;height:64px;border-radius:17px;display:flex;align-items:center;justify-content:center;position:relative;
+  background:linear-gradient(180deg,#0B1D21,#071316);
+  box-shadow:0 0 0 1.5px rgba(111,245,203,.28), 0 1px 0 rgba(255,255,255,.14) inset, 0 -8px 22px rgba(63,224,174,.12) inset, 0 18px 40px -18px rgba(0,0,0,.9), 0 0 40px -8px rgba(63,224,174,.32);}
+.tile svg{width:40px;height:40px;filter:drop-shadow(0 0 12px rgba(63,224,174,.5))}
+.wm{font-family:"Bricolage Grotesque";font-weight:800;font-size:40px;letter-spacing:.15em;line-height:1;
+  background:linear-gradient(180deg,#FBFFFD 8%,#C9E6DC 55%,#8FBFB0 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.handle{font-family:"IBM Plex Mono";font-weight:500;font-size:20px;color:var(--spring-bright);
+  padding:11px 22px;border-radius:99px;border:1px solid rgba(63,224,174,.28);
+  background:linear-gradient(180deg, rgba(63,224,174,.12), rgba(63,224,174,.04));box-shadow:0 1px 0 rgba(255,255,255,.06) inset}
+/* footer */
+.foot{position:absolute;left:92px;bottom:52px;z-index:6;font-family:"IBM Plex Mono";font-weight:500;font-size:19px;color:var(--silt);letter-spacing:.05em}
+.foot b{color:var(--spring)}
+.wave{position:absolute;left:0;right:0;bottom:26px;height:20px;opacity:.4;z-index:1}
+/* center copy */
+.center{position:absolute;left:92px;top:50%;transform:translateY(-50%);z-index:5;max-width:980px}
+.kicker{font-family:"IBM Plex Mono";font-weight:500;font-size:18px;letter-spacing:.3em;color:var(--spring);text-transform:uppercase;margin-bottom:24px}
+.head{font-family:"Bricolage Grotesque";font-weight:800;font-size:94px;line-height:1.03;letter-spacing:-.012em;
+  background:linear-gradient(180deg,#FBFFFD 6%,#CFEAE0 58%,#9FC8BA 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.head .g{background:linear-gradient(180deg,#7DF7D1,#2FCB9A);-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{font-family:"Albert Sans";font-weight:400;font-size:29px;color:var(--silt);margin-top:28px;max-width:900px;line-height:1.42}
+.sub b{color:var(--foam);font-weight:600}
+.chips{display:flex;gap:14px;margin-top:40px;flex-wrap:wrap}
+.chip{font-family:"IBM Plex Mono";font-weight:500;font-size:18px;padding:11px 22px;border-radius:99px;color:var(--spring-bright);
+  border:1px solid rgba(63,224,174,.3);background:linear-gradient(180deg, rgba(63,224,174,.12), rgba(63,224,174,.04));box-shadow:0 1px 0 rgba(255,255,255,.06) inset}
+.chip.gold{color:var(--limestone);border-color:rgba(203,184,145,.34);background:linear-gradient(180deg, rgba(203,184,145,.13), rgba(203,184,145,.04))}
+.chip.rh{color:#7CF58F;border-color:rgba(0,200,5,.42);background:linear-gradient(180deg, rgba(0,200,5,.15), rgba(0,200,5,.04))}
+/* right-side motif */
+.motif{position:absolute;right:104px;top:50%;transform:translateY(-50%);z-index:3;width:520px;height:560px;display:flex;align-items:center;justify-content:center}
+.coin{position:relative;width:360px;height:360px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(200px 200px at 33% 26%, rgba(255,255,255,.16), transparent 46%),radial-gradient(240px 240px at 68% 82%, rgba(63,224,174,.14), transparent 58%),linear-gradient(155deg,#12292E 0%,#0A1A1E 52%,#0E2227 100%);
+  box-shadow:0 0 0 2px rgba(111,245,203,.35),0 0 0 9px rgba(9,20,23,.9),0 0 0 10.5px rgba(111,245,203,.16),0 34px 70px -22px rgba(0,0,0,.9),0 0 90px -14px rgba(63,224,174,.4);}
+.coin::before{content:"";position:absolute;inset:20px;border-radius:50%;border:1.5px dashed rgba(111,245,203,.22)}
+.coin::after{content:"";position:absolute;inset:0;border-radius:50%;background:linear-gradient(200deg, rgba(255,255,255,.10), transparent 34%)}
+.coin svg{width:188px;height:188px;filter:drop-shadow(0 0 26px rgba(63,224,174,.55)) drop-shadow(0 12px 22px rgba(0,0,0,.55))}
+.badge{position:absolute;font-family:"IBM Plex Mono";font-weight:500;font-size:18px;color:#04140d;
+  background:linear-gradient(180deg,#8CF8D6,#3FE0AE);padding:11px 20px;border-radius:99px;
+  box-shadow:0 12px 26px -8px rgba(0,0,0,.75), 0 0 0 4px rgba(9,20,23,.85);}
+.big1{font-family:"Bricolage Grotesque";font-weight:800;font-size:340px;line-height:.78;letter-spacing:-.03em;
+  background:linear-gradient(180deg,#7DF7D1 4%,#2FCB9A 72%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 46px rgba(63,224,174,.32))}
+.big1 .pct{font-size:190px}
+.reflect{position:absolute;left:50%;bottom:34px;transform:translateX(-50%);width:320px;height:36px;border-radius:50%;
+  background:radial-gradient(closest-side, rgba(63,224,174,.24), transparent 72%);filter:blur(7px)}
+/* hero (banner 1) */
+.hero{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5;text-align:center}
+.hero .tile{width:120px;height:120px;border-radius:30px;margin-bottom:34px}
+.hero .tile svg{width:76px;height:76px}
+.hero h1{font-family:"Bricolage Grotesque";font-weight:800;font-size:150px;letter-spacing:.11em;line-height:1;
+  background:linear-gradient(180deg,#FBFFFD 8%,#C9E6DC 54%,#8FBFB0 100%);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 20px 44px rgba(0,0,0,.5))}
+.hero .tag{font-family:"Albert Sans";font-weight:400;font-size:36px;color:var(--silt);margin-top:26px}
+.hero .tag b{color:var(--foam);font-weight:600}
+.hero .tag .hl{color:var(--spring-bright);font-weight:600}
+.hero .chips{justify-content:center;margin-top:44px}
+.hero .chip{font-size:19px;padding:13px 26px}
+</style></head>
+<body>
+
+<!-- ============ B1 · INTRO / HERO ============ -->
+<div class="banner" id="b1">
+  <div class="grid"></div><div class="noise"></div><div class="beam"></div>
+  <div class="topbar"><span></span><span class="handle">@Hoodpoolfun</span></div>
+  <div class="hero">
+    <span class="tile"><svg viewBox="0 0 32 32"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6FF5CB"/><stop offset="1" stop-color="#2FCB9A"/></linearGradient></defs><path d="M16 5c-4.4 5.5-6.6 8.8-6.6 12.1a6.6 6.6 0 0 0 13.2 0C22.6 13.8 20.4 10.5 16 5z" fill="url(#g)"/></svg></span>
+    <h1>HOODPOOL</h1>
+    <div class="tag">The liquidity layer for <b>Robinhood Chain</b></div>
+    <div class="chips">
+      <span class="chip">SWAP LIVE</span>
+      <span class="chip">EARN 1% OF EVERY SWAP</span>
+      <span class="chip">NON-CUSTODIAL TP / SL</span>
+    </div>
+  </div>
+  <div class="foot">hoodpool<b>.fun</b></div>
+  <svg class="wave" viewBox="0 0 1600 20" preserveAspectRatio="none"><path d="M0 10 Q 50 2 100 10 T 200 10 T 300 10 T 400 10 T 500 10 T 600 10 T 700 10 T 800 10 T 900 10 T 1000 10 T 1100 10 T 1200 10 T 1300 10 T 1400 10 T 1500 10 T 1600 10" fill="none" stroke="#3FE0AE" stroke-width="1.6" opacity=".7"/></svg>
+</div>
+
+<!-- ============ B2 · ONE-CLICK LIQUIDITY ============ -->
+<div class="banner" id="b2">
+  <div class="grid"></div><div class="noise"></div><div class="beam"></div>
+  <div class="topbar">
+    <div class="lockup"><span class="tile"><svg viewBox="0 0 32 32"><path d="M16 5c-4.4 5.5-6.6 8.8-6.6 12.1a6.6 6.6 0 0 0 13.2 0C22.6 13.8 20.4 10.5 16 5z" fill="url(#g)"/></svg></span><span class="wm">HOODPOOL</span></div>
+    <span class="handle">@Hoodpoolfun</span>
+  </div>
+  <div class="center">
+    <div class="kicker">Launch liquidity</div>
+    <div class="head">Any token gets a<br><span class="g">Uniswap pool</span><br>in one click.</div>
+    <div class="sub">Deploy a live market in a single transaction — <b>no forms, no gatekeepers, no admin keys</b>.</div>
+  </div>
+  <div class="motif">
+    <div class="coin">
+      <svg viewBox="0 0 32 32"><path d="M16 4.6c-4.6 5.8-6.9 9.2-6.9 12.6a6.9 6.9 0 0 0 13.8 0c0-3.4-2.3-6.8-6.9-12.6z" fill="url(#g)"/></svg>
+      <span class="badge" style="bottom:26px;right:-6px">1 CLICK</span>
+    </div>
+    <div class="reflect"></div>
+  </div>
+  <div class="foot">hoodpool<b>.fun</b> · Robinhood Chain</div>
+  <svg class="wave" viewBox="0 0 1600 20" preserveAspectRatio="none"><path d="M0 10 Q 50 2 100 10 T 200 10 T 300 10 T 400 10 T 500 10 T 600 10 T 700 10 T 800 10 T 900 10 T 1000 10 T 1100 10 T 1200 10 T 1300 10 T 1400 10 T 1500 10 T 1600 10" fill="none" stroke="#3FE0AE" stroke-width="1.6" opacity=".7"/></svg>
+</div>
+
+<!-- ============ B3 · EARN 1% ============ -->
+<div class="banner" id="b3">
+  <div class="grid"></div><div class="noise"></div><div class="beam"></div>
+  <div class="topbar">
+    <div class="lockup"><span class="tile"><svg viewBox="0 0 32 32"><path d="M16 5c-4.4 5.5-6.6 8.8-6.6 12.1a6.6 6.6 0 0 0 13.2 0C22.6 13.8 20.4 10.5 16 5z" fill="url(#g)"/></svg></span><span class="wm">HOODPOOL</span></div>
+    <span class="handle">@Hoodpoolfun</span>
+  </div>
+  <div class="center">
+    <div class="kicker">Provide liquidity</div>
+    <div class="head">Get <span class="g">paid</span> on<br>every trade.</div>
+    <div class="sub">LPs collect <b>1% of all volume</b> routed through their pool — streamed on-chain, claim anytime.</div>
+  </div>
+  <div class="motif"><div class="big1"><span class="pct"></span>1<span class="pct">%</span></div></div>
+  <div class="foot">hoodpool<b>.fun</b> · Robinhood Chain</div>
+  <svg class="wave" viewBox="0 0 1600 20" preserveAspectRatio="none"><path d="M0 10 Q 50 2 100 10 T 200 10 T 300 10 T 400 10 T 500 10 T 600 10 T 700 10 T 800 10 T 900 10 T 1000 10 T 1100 10 T 1200 10 T 1300 10 T 1400 10 T 1500 10 T 1600 10" fill="none" stroke="#3FE0AE" stroke-width="1.6" opacity=".7"/></svg>
+</div>
+
+<!-- ============ B4 · NON-CUSTODIAL TP / SL ============ -->
+<div class="banner" id="b4">
+  <div class="grid"></div><div class="noise"></div><div class="beam"></div>
+  <div class="topbar">
+    <div class="lockup"><span class="tile"><svg viewBox="0 0 32 32"><path d="M16 5c-4.4 5.5-6.6 8.8-6.6 12.1a6.6 6.6 0 0 0 13.2 0C22.6 13.8 20.4 10.5 16 5z" fill="url(#g)"/></svg></span><span class="wm">HOODPOOL</span></div>
+    <span class="handle">@Hoodpoolfun</span>
+  </div>
+  <div class="center">
+    <div class="kicker">On-chain automation</div>
+    <div class="head">Take-profit &amp;<br>stop-loss, <span class="g">non-<br>custodial</span>.</div>
+    <div class="sub">Set your exits on-chain. <b>Your keys sign, your funds never leave your wallet.</b></div>
+  </div>
+  <div class="motif">
+    <svg viewBox="0 0 500 380" width="500" height="380">
+      <rect x="1" y="1" width="498" height="378" rx="22" fill="rgba(9,22,26,.62)" stroke="rgba(63,224,174,.18)" stroke-width="1.5"/>
+      <line x1="30" y1="74" x2="470" y2="74" stroke="#3FE0AE" stroke-width="2" stroke-dasharray="8 8"/>
+      <text x="454" y="60" text-anchor="end" fill="#6FF5CB" font-family="IBM Plex Mono" font-size="19" font-weight="500">TP  +40%</text>
+      <line x1="30" y1="312" x2="470" y2="312" stroke="#F0705C" stroke-width="2" stroke-dasharray="8 8"/>
+      <text x="454" y="338" text-anchor="end" fill="#F0705C" font-family="IBM Plex Mono" font-size="19" font-weight="500">SL  −12%</text>
+      <path d="M30 262 L110 224 L172 252 L246 156 L318 192 L388 118 L470 96" fill="none" stroke="#EDF7F4" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"/>
+      <circle cx="470" cy="96" r="7" fill="#6FF5CB"/>
+      <circle cx="470" cy="96" r="13" fill="none" stroke="#6FF5CB" stroke-opacity=".4" stroke-width="2"/>
+    </svg>
+  </div>
+  <div class="foot">hoodpool<b>.fun</b> · Robinhood Chain</div>
+  <svg class="wave" viewBox="0 0 1600 20" preserveAspectRatio="none"><path d="M0 10 Q 50 2 100 10 T 200 10 T 300 10 T 400 10 T 500 10 T 600 10 T 700 10 T 800 10 T 900 10 T 1000 10 T 1100 10 T 1200 10 T 1300 10 T 1400 10 T 1500 10 T 1600 10" fill="none" stroke="#3FE0AE" stroke-width="1.6" opacity=".7"/></svg>
+</div>
+
+<!-- ============ B5 · LIVE / v2+v3 ROUTING ============ -->
+<div class="banner" id="b5">
+  <div class="grid"></div><div class="noise"></div><div class="beam"></div>
+  <div class="topbar">
+    <div class="lockup"><span class="tile"><svg viewBox="0 0 32 32"><path d="M16 5c-4.4 5.5-6.6 8.8-6.6 12.1a6.6 6.6 0 0 0 13.2 0C22.6 13.8 20.4 10.5 16 5z" fill="url(#g)"/></svg></span><span class="wm">HOODPOOL</span></div>
+    <span class="handle">@Hoodpoolfun</span>
+  </div>
+  <div class="center">
+    <div class="kicker">Now live</div>
+    <div class="head">250+ tokens,<br>auto-routed<br><span class="g">v2 + v3</span>.</div>
+    <div class="sub">Best price across Uniswap v2 and v3 on Robinhood Chain — found for you, one tap.</div>
+    <div class="chips"><span class="chip rh">ROBINHOOD CHAIN</span><span class="chip gold">$HPL · CA COMING SOON</span></div>
+  </div>
+  <div class="motif">
+    <svg viewBox="0 0 500 500" width="500" height="500">
+      <g stroke="rgba(63,224,174,.42)" stroke-width="2.5" fill="none">
+        <line x1="250" y1="250" x2="96" y2="104"/>
+        <line x1="250" y1="250" x2="406" y2="120"/>
+        <line x1="250" y1="250" x2="80" y2="384"/>
+        <line x1="250" y1="250" x2="418" y2="374"/>
+      </g>
+      <g font-family="IBM Plex Mono" font-size="19" font-weight="500" text-anchor="middle">
+        <circle cx="96" cy="104" r="42" fill="#5E77CF"/><text x="96" y="111" fill="#fff">ETH</text>
+        <circle cx="406" cy="120" r="42" fill="#3E6FE0"/><text x="406" y="127" fill="#fff">USDG</text>
+        <circle cx="80" cy="384" r="42" fill="#2A2E3A"/><text x="80" y="391" fill="#EDF7F4">PONS</text>
+        <circle cx="418" cy="374" r="42" fill="#123B2E"/><text x="418" y="381" fill="#8CF5C4">WETH</text>
+      </g>
+      <circle cx="250" cy="250" r="70" fill="url(#cg2)"/>
+      <circle cx="250" cy="250" r="70" fill="none" stroke="rgba(111,245,203,.5)" stroke-width="2.5"/>
+      <defs><linearGradient id="cg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#12292E"/><stop offset="1" stop-color="#0A1A1E"/></linearGradient></defs>
+      <path d="M250 214c-13 16-19.5 26-19.5 35.6a19.5 19.5 0 0 0 39 0c0-9.6-6.5-19.6-19.5-35.6z" fill="url(#g)" transform="scale(1)"/>
+    </svg>
+  </div>
+  <div class="foot">hoodpool<b>.fun</b> · Robinhood Chain</div>
+  <svg class="wave" viewBox="0 0 1600 20" preserveAspectRatio="none"><path d="M0 10 Q 50 2 100 10 T 200 10 T 300 10 T 400 10 T 500 10 T 600 10 T 700 10 T 800 10 T 900 10 T 1000 10 T 1100 10 T 1200 10 T 1300 10 T 1400 10 T 1500 10 T 1600 10" fill="none" stroke="#3FE0AE" stroke-width="1.6" opacity=".7"/></svg>
+</div>
+
+</body></html>
