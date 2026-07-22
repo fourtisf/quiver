@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+@font-face{
+  font-family:"Bricolage Grotesque";font-weight:800;
+  src:url("file:///tmp/claude-0/-home-user-quiver/a648b577-08fb-5d1d-bf07-f5e89479ceb4/scratchpad/node_modules/@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-800-normal.woff2") format("woff2");
+}
+@font-face{
+  font-family:"Albert Sans";font-weight:400;
+  src:url("file:///tmp/claude-0/-home-user-quiver/a648b577-08fb-5d1d-bf07-f5e89479ceb4/scratchpad/node_modules/@fontsource/albert-sans/files/albert-sans-latin-400-normal.woff2") format("woff2");
+}
+@font-face{
+  font-family:"Albert Sans";font-weight:600;
+  src:url("file:///tmp/claude-0/-home-user-quiver/a648b577-08fb-5d1d-bf07-f5e89479ceb4/scratchpad/node_modules/@fontsource/albert-sans/files/albert-sans-latin-600-normal.woff2") format("woff2");
+}
+@font-face{
+  font-family:"IBM Plex Mono";font-weight:500;
+  src:url("file:///tmp/claude-0/-home-user-quiver/a648b577-08fb-5d1d-bf07-f5e89479ceb4/scratchpad/node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2") format("woff2");
+}
+:root{
+  --ink:#050E10;--spring:#3FE0AE;--spring-bright:#6FF5CB;
+  --limestone:#CBB891;--silt:#82989B;--silt-dark:#546A6D;--foam:#EDF7F4;
+  --coral:#F0705C;--amber:#E8B45A;--stratum:#1F393D;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1500px;height:500px;overflow:hidden}
+.stage{
+  position:relative;width:1500px;height:500px;color:var(--foam);
+  background:
+    radial-gradient(900px 460px at 86% -10%, rgba(63,224,174,.14), transparent 62%),
+    radial-gradient(700px 420px at 4% 112%, rgba(203,184,145,.09), transparent 60%),
+    radial-gradient(520px 320px at 55% 120%, rgba(63,224,174,.05), transparent 65%),
+    linear-gradient(180deg,#08151A 0%, var(--ink) 42%);
+}
+.stage::before{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(180deg, transparent 0 62px, rgba(130,152,155,.045) 62px 63px);
+}
+.stage::after{
+  content:"";position:absolute;inset:0;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+/* waterline curve along the bottom */
+.wave{position:absolute;left:0;right:0;bottom:34px;height:18px;opacity:.5}
+.left{position:absolute;left:110px;top:50%;transform:translateY(-50%);z-index:2}
+.brand{display:flex;align-items:center;gap:22px}
+.brand svg{width:78px;height:78px;filter:drop-shadow(0 0 22px rgba(63,224,174,.45))}
+.wordmark{
+  font-family:"Bricolage Grotesque";font-weight:800;font-size:64px;letter-spacing:.14em;
+  background:linear-gradient(180deg,#F8FEFB,#AFD6C9);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  line-height:1;
+}
+.tagline{
+  font-family:"Albert Sans";font-weight:400;font-size:23px;color:var(--silt);
+  margin-top:18px;letter-spacing:.01em;
+}
+.tagline b{font-weight:600;color:var(--foam)}
+.flow{
+  font-family:"IBM Plex Mono";font-weight:500;font-size:15.5px;color:var(--silt-dark);
+  margin-top:22px;letter-spacing:.01em;
+}
+.flow b{color:var(--foam);font-weight:500}
+.flow .a{color:var(--spring)}
+.flow .l{color:var(--limestone)}
+/* right: position-card motif */
+.viz{
+  position:absolute;right:96px;top:50%;transform:translateY(-50%);z-index:2;
+  width:470px;border-radius:20px;padding:24px 24px 20px;
+  background:rgba(14,31,34,.88);
+  box-shadow:0 34px 80px -38px rgba(0,0,0,.85), 0 0 0 1px rgba(237,247,244,.09) inset, 0 1px 0 rgba(237,247,244,.13) inset;
+}
+.viz-top{display:flex;align-items:center;gap:12px;font-family:"Albert Sans";font-weight:600;font-size:19px}
+.coin{width:34px;height:34px;border-radius:50%;box-shadow:0 0 0 2.5px #081416}
+.c1{background:radial-gradient(circle at 32% 28%, #8CF7D3, #2FCB9A)}
+.c2{background:radial-gradient(circle at 32% 28%, #B7C6F5, #5E77CF);margin-left:-11px}
+.fee{font-family:"IBM Plex Mono";font-weight:500;font-size:12px;color:var(--spring);border:1px solid rgba(63,224,174,.3);background:rgba(63,224,174,.09);padding:2px 10px;border-radius:99px}
+.inr{margin-left:auto;font-family:"IBM Plex Mono";font-weight:500;font-size:12.5px;color:var(--spring)}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--spring);box-shadow:0 0 9px var(--spring);margin-right:7px;vertical-align:1px}
+.track{
+  position:relative;height:58px;border-radius:12px;overflow:hidden;margin-top:18px;
+  background:
+    repeating-linear-gradient(180deg,transparent 0 9px,rgba(130,152,155,.08) 9px 10px),
+    linear-gradient(180deg, rgba(4,11,12,.92), rgba(7,16,18,.92));
+  box-shadow:0 2px 10px rgba(0,0,0,.55) inset, 0 0 0 1px rgba(237,247,244,.05);
+}
+.band{
+  position:absolute;top:0;bottom:0;left:17%;width:58%;
+  background:
+    repeating-linear-gradient(64deg, transparent 0 15px, rgba(255,255,255,.05) 15px 18px),
+    linear-gradient(180deg, rgba(63,224,174,.36), rgba(63,224,174,.08));
+  border-left:1.5px solid rgba(63,224,174,.55);border-right:1.5px solid rgba(63,224,174,.55);
+  box-shadow:0 0 28px -7px rgba(63,224,174,.45) inset;
+}
+.cur{position:absolute;top:0;bottom:0;left:46%;width:2.5px;background:var(--spring-bright);box-shadow:0 0 12px var(--spring), 0 0 30px rgba(63,224,174,.55)}
+.cur::after{content:"";position:absolute;top:-1px;left:50%;transform:translateX(-50%);width:9px;height:9px;border-radius:50%;background:inherit;box-shadow:inherit}
+.mark{position:absolute;top:0;bottom:0;width:1.5px}
+.mark.tp{left:80%;background:rgba(232,180,90,.7)}
+.mark.sl{left:9%;background:rgba(240,112,92,.7)}
+.mark span{position:absolute;top:5px;font-family:"IBM Plex Mono";font-weight:500;font-size:10.5px;letter-spacing:.06em}
+.mark.tp span{left:6px;color:var(--amber)}
+.mark.sl span{left:6px;color:var(--coral)}
+.labels{display:flex;justify-content:space-between;font-family:"IBM Plex Mono";font-weight:500;font-size:12px;color:var(--silt-dark);margin-top:11px}
+.labels b{color:var(--foam);font-weight:500}
+.tags{display:flex;gap:9px;margin-top:15px;font-family:"IBM Plex Mono";font-weight:500;font-size:11.5px;align-items:center}
+.tag{padding:3.5px 11px;border-radius:99px}
+.tag.tp{color:var(--amber);border:1px solid rgba(232,180,90,.32);background:rgba(232,180,90,.08)}
+.tag.sl{color:var(--coral);border:1px solid rgba(240,112,92,.32);background:rgba(240,112,92,.08)}
+.tags .note{margin-left:auto;color:var(--spring-bright)}
+.site{
+  position:absolute;right:96px;bottom:26px;z-index:2;
+  font-family:"IBM Plex Mono";font-weight:500;font-size:14px;color:var(--silt);letter-spacing:.06em;
+}
+.site b{color:var(--spring)}
+</style></head>
+<body>
+<div class="stage">
+  <div class="left">
+    <div class="brand">
+      <svg viewBox="0 0 32 32">
+        <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#6FF5CB"/><stop offset="1" stop-color="#2FCB9A"/>
+        </linearGradient></defs>
+        <rect width="32" height="32" rx="8" fill="#050E10"/>
+        <path d="M16 6c-4 5-6 8-6 11a6 6 0 0 0 12 0c0-3-2-6-6-11z" fill="url(#g)"/>
+      </svg>
+      <span class="wordmark">HOODPOOL</span>
+    </div>
+    <div class="tagline">The liquidity layer for <b>Robinfun</b> tokens · <b>1% of every swap</b> to LPs</div>
+    <div class="flow">Launch on <b>Robinfun</b> <span class="a">→</span> deploy liquidity on <b>Hoodpool</b> <span class="a">→</span> lock LP in <span class="l">Strongroom</span></div>
+  </div>
+
+  <div class="viz">
+    <div class="viz-top">
+      <span style="display:flex"><span class="coin c1"></span><span class="coin c2"></span></span>
+      RBN / WETH
+      <span class="fee">1.00%</span>
+      <span class="inr"><span class="dot"></span>in range</span>
+    </div>
+    <div class="track">
+      <div class="band"></div>
+      <div class="mark sl"><span>SL</span></div>
+      <div class="mark tp"><span>TP</span></div>
+      <div class="cur"></div>
+    </div>
+    <div class="labels"><span>min <b>0.00071</b></span><span>current <b>0.00104</b></span><span>max <b>0.00162</b></span></div>
+    <div class="tags">
+      <span class="tag tp">TP armed</span>
+      <span class="tag sl">SL armed</span>
+      <span class="note">non-custodial · TWAP</span>
+    </div>
+  </div>
+
+  <svg class="wave" viewBox="0 0 1500 18" preserveAspectRatio="none">
+    <path d="M0 9 Q 47 1 94 9 T 188 9 T 282 9 T 376 9 T 470 9 T 564 9 T 658 9 T 752 9 T 846 9 T 940 9 T 1034 9 T 1128 9 T 1222 9 T 1316 9 T 1410 9 T 1504 9" fill="none" stroke="#3FE0AE" stroke-width="1.6" opacity=".75"/>
+  </svg>
+  <div class="site">hoodpool<b>.fun</b></div>
+</div>
+</body></html>
