@@ -11,19 +11,23 @@
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Albert+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#050E10; --basin:rgba(14,31,34,.82); --stratum:#1F393D;
+  --ink:#050E10; --ink-2:#081416;
+  --basin:rgba(14,31,34,.82); --basin-2:#122528; --basin-3:#183034;
+  --stratum:#1F393D; --stratum-soft:#152A2E;
   --spring:#3FE0AE; --spring-bright:#6FF5CB;
   --limestone:#CBB891; --silt:#82989B; --silt-dark:#546A6D; --foam:#EDF7F4;
+  --coral:#F0705C; --amber:#E8B45A;
   --disp:"Bricolage Grotesque",system-ui,sans-serif;
   --body:"Albert Sans",system-ui,sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,monospace;
   --ease:cubic-bezier(.22,.9,.3,1);
 }
 *{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scrollbar-color:var(--stratum) var(--ink)}
 body{
   background:var(--ink);color:var(--foam);font-family:var(--body);
   font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
-  min-height:100vh;display:flex;flex-direction:column;
+  overflow-x:hidden;
 }
 body::before{
   content:"";position:fixed;inset:0;z-index:-3;pointer-events:none;
@@ -40,126 +44,486 @@ body::after{
 ::selection{background:var(--spring);color:var(--ink)}
 :focus-visible{outline:2px solid var(--spring);outline-offset:2px;border-radius:4px}
 a{color:var(--spring);text-decoration:none}
-main{
-  flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;
-  padding:48px 20px;text-align:center;
-}
-.brand{display:flex;align-items:center;gap:13px;margin-bottom:34px}
-.brand svg{width:44px;height:44px;filter:drop-shadow(0 0 14px rgba(63,224,174,.4))}
-.brand-name{
-  font-family:var(--disp);font-weight:800;font-size:26px;letter-spacing:.16em;
-  background:linear-gradient(180deg,#F6FDFA,#BDD8D0);
-  -webkit-background-clip:text;background-clip:text;color:transparent;
-}
-.chip{
-  display:inline-flex;align-items:center;gap:7px;margin-bottom:26px;
-  font-family:var(--mono);font-size:11px;font-weight:500;color:var(--limestone);
-  background:linear-gradient(180deg, rgba(203,184,145,.14), rgba(203,184,145,.05));
-  border:1px solid rgba(203,184,145,.22);padding:5px 13px;border-radius:99px;
-}
-.chip .dot{width:6px;height:6px;border-radius:99px;background:var(--spring);box-shadow:0 0 8px var(--spring)}
-h1{
-  font-family:var(--disp);font-weight:800;font-size:clamp(34px,6vw,58px);
-  line-height:1.06;letter-spacing:-.015em;max-width:15ch;margin-bottom:18px;
-}
-h1 em{font-style:normal;color:var(--spring)}
-.sub{max-width:52ch;color:var(--silt);font-size:clamp(15px,2vw,17px);margin-bottom:30px}
-.flow{
-  font-family:var(--mono);font-size:12.5px;color:var(--silt-dark);margin-bottom:40px;
-  display:flex;flex-wrap:wrap;justify-content:center;gap:6px 10px;
-}
-.flow b{color:var(--foam);font-weight:500}
-.flow .arrow{color:var(--spring)}
-.cta{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;margin-bottom:52px}
-.btn{
-  font-family:var(--body);font-weight:600;font-size:14px;border-radius:13px;
-  padding:13px 26px;cursor:pointer;transition:transform .18s var(--ease), box-shadow .18s var(--ease);
-  display:inline-flex;align-items:center;gap:8px;
-}
-.btn-primary{
-  background:linear-gradient(180deg,var(--spring-bright),var(--spring));color:var(--ink);
-  box-shadow:0 8px 28px -10px rgba(63,224,174,.55);
-}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 12px 34px -10px rgba(63,224,174,.7)}
-.btn-ghost{
-  color:var(--foam);border:1px solid var(--stratum);background:rgba(14,31,34,.5);
-}
-.btn-ghost:hover{transform:translateY(-1px);border-color:rgba(63,224,174,.35)}
-.cards{
-  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:14px;max-width:820px;width:100%;
-}
-.card{
-  position:relative;background:var(--basin);border-radius:18px;border:1px solid transparent;
-  padding:22px 20px;text-align:left;box-shadow:0 24px 60px -32px rgba(0,0,0,.7);
-}
-.card::before{
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+/* aurora blobs */
+.aurora{position:fixed;inset:0;z-index:-2;pointer-events:none;overflow:hidden}
+.aurora i{position:absolute;border-radius:50%;filter:blur(40px)}
+.aurora .a1{width:640px;height:640px;right:-14%;top:-18%;background:radial-gradient(circle, rgba(63,224,174,.13), transparent 62%);animation:aur1 30s ease-in-out infinite alternate}
+.aurora .a2{width:520px;height:520px;left:-12%;bottom:-24%;background:radial-gradient(circle, rgba(203,184,145,.10), transparent 62%);animation:aur2 36s ease-in-out infinite alternate}
+.aurora .a3{width:380px;height:380px;left:38%;top:52%;background:radial-gradient(circle, rgba(63,224,174,.07), transparent 62%);animation:aur3 26s ease-in-out infinite alternate}
+@keyframes aur1{to{transform:translate(-70px,60px) scale(1.15)}}
+@keyframes aur2{to{transform:translate(60px,-50px) scale(1.1)}}
+@keyframes aur3{to{transform:translate(-50px,-70px) scale(1.2)}}
+/* cursor spotlight */
+.spot{position:fixed;left:0;top:0;z-index:-1;width:760px;height:760px;border-radius:50%;pointer-events:none;background:radial-gradient(circle, rgba(63,224,174,.06), transparent 58%);transform:translate(-9999px,-9999px)}
+
+/* glass surface w/ gradient hairline + cursor-follow glow */
+.glass{position:relative;background:var(--basin);border-radius:18px;border:1px solid transparent;box-shadow:0 24px 60px -32px rgba(0,0,0,.7)}
+.glass::before{
   content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;pointer-events:none;
   background:linear-gradient(180deg, rgba(237,247,244,.14), rgba(237,247,244,.035) 38%, rgba(63,224,174,.10) 100%);
   -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   mask-composite:exclude;
 }
-.card h3{font-family:var(--disp);font-weight:700;font-size:15.5px;margin-bottom:7px;display:flex;align-items:center;gap:8px}
-.card h3 .ico{color:var(--spring)}
-.card p{color:var(--silt);font-size:13.5px}
-footer{
-  padding:26px 20px;text-align:center;font-family:var(--mono);font-size:11.5px;color:var(--silt-dark);
-  border-top:1px solid rgba(31,57,61,.5);
+.glass::after{content:"";position:absolute;inset:-1px;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .35s;background:radial-gradient(240px circle at var(--mx,50%) var(--my,50%), rgba(63,224,174,.13), transparent 62%)}
+.glass:hover::after{opacity:1}
+
+/* ---------- nav ---------- */
+.nav{
+  position:sticky;top:0;z-index:50;
+  background:rgba(5,14,16,.72);
+  backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);
+  transition:box-shadow .3s;
 }
-footer a{color:var(--silt)}
-footer a:hover{color:var(--spring)}
+.nav.scrolled{box-shadow:0 14px 44px -18px rgba(0,0,0,.65)}
+.nav::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg, transparent, rgba(63,224,174,.35) 22%, rgba(203,184,145,.3) 55%, rgba(63,224,174,.25) 78%, transparent);
+  opacity:.5;
+}
+.nav-inner{max-width:1160px;margin:0 auto;padding:0 22px;display:flex;align-items:center;gap:16px;height:66px}
+.brand{display:flex;align-items:center;gap:11px}
+.brand svg{width:30px;height:30px;filter:drop-shadow(0 0 10px rgba(63,224,174,.35))}
+.brand-name{
+  font-family:var(--disp);font-weight:800;font-size:16.5px;letter-spacing:.15em;
+  background:linear-gradient(180deg,#F6FDFA,#BDD8D0);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.chain-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:10.5px;font-weight:500;color:var(--limestone);
+  background:linear-gradient(180deg, rgba(203,184,145,.14), rgba(203,184,145,.05));
+  border:1px solid rgba(203,184,145,.22);
+  padding:4px 10px;border-radius:99px;white-space:nowrap;
+}
+.nav-cta{margin-left:auto;display:flex;gap:10px;align-items:center}
+.nav-link{font-size:13px;font-weight:600;color:var(--silt);padding:8px 10px;border-radius:9px;transition:color .15s}
+.nav-link:hover{color:var(--foam)}
+
+/* ---------- buttons ---------- */
+.btn{
+  font-family:var(--body);font-weight:600;font-size:14px;border-radius:13px;
+  padding:13px 24px;display:inline-flex;align-items:center;gap:8px;
+  transition:transform .18s var(--ease), box-shadow .18s var(--ease), border-color .18s;
+}
+.btn-primary{
+  background:linear-gradient(180deg,var(--spring-bright),var(--spring));color:var(--ink);
+  animation:ctab 3.6s ease-in-out infinite;
+}
+.btn-primary:hover{transform:translateY(-1px)}
+@keyframes ctab{
+  0%,100%{box-shadow:0 1px 0 rgba(255,255,255,.4) inset, 0 10px 26px -10px rgba(63,224,174,.5)}
+  50%{box-shadow:0 1px 0 rgba(255,255,255,.45) inset, 0 14px 36px -10px rgba(63,224,174,.8)}
+}
+.btn-ghost{color:var(--foam);border:1px solid var(--stratum);background:rgba(14,31,34,.5)}
+.btn-ghost:hover{transform:translateY(-1px);border-color:rgba(63,224,174,.35)}
+.btn-sm{padding:9px 16px;font-size:13px;border-radius:11px}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1160px;margin:0 auto;padding:0 22px}
+section{padding:34px 0}
+
+/* ---------- hero ---------- */
+.hero{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:center;padding:64px 0 40px}
+.livedot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--spring);box-shadow:0 0 8px var(--spring);margin-right:7px;vertical-align:1px;animation:breathe 2.2s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.45}}
+.hero-chip{
+  display:inline-flex;align-items:center;font-family:var(--mono);font-size:11px;color:var(--limestone);
+  background:rgba(203,184,145,.08);border:1px solid rgba(203,184,145,.2);
+  padding:6px 13px;border-radius:99px;margin-bottom:22px;
+}
+h1{
+  font-family:var(--disp);font-weight:800;font-size:clamp(36px,5.2vw,58px);
+  line-height:1.04;letter-spacing:-.015em;margin-bottom:18px;
+}
+h1 em{
+  font-style:normal;
+  background:linear-gradient(180deg,var(--spring-bright),var(--spring));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.sub{max-width:50ch;color:var(--silt);font-size:16px;margin-bottom:26px}
+.sub strong{color:var(--foam);font-weight:600}
+.hero-cta{display:flex;gap:13px;flex-wrap:wrap;margin-bottom:30px}
+.hero-stats{display:flex;gap:0;border-top:1px solid rgba(31,57,61,.6);max-width:460px}
+.hstat{flex:1;padding:14px 18px 0 0}
+.hstat + .hstat{padding-left:18px;border-left:1px dashed rgba(31,57,61,.7)}
+.hstat .v{font-family:var(--mono);font-size:19px;font-weight:600;color:var(--foam);font-variant-numeric:tabular-nums}
+.hstat .v i{font-style:normal;color:var(--spring)}
+.hstat .k{font-size:10.5px;color:var(--silt-dark);font-weight:600;text-transform:uppercase;letter-spacing:.07em;margin-top:3px}
+
+/* ---------- hero position card (mock) ---------- */
+.pos-mock{padding:22px;animation:fadeUp .7s .15s var(--ease) both}
+.pm-badge{
+  position:absolute;top:-11px;right:16px;z-index:2;
+  font-family:var(--mono);font-size:10px;font-weight:600;letter-spacing:.1em;color:var(--ink);
+  background:linear-gradient(180deg,var(--spring-bright),var(--spring));
+  padding:4px 11px;border-radius:99px;box-shadow:0 6px 18px -6px rgba(63,224,174,.6);
+}
+.pm-top{display:flex;align-items:center;gap:11px;margin-bottom:4px}
+.coins{display:flex}
+.coin{
+  width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-weight:600;font-size:11px;color:var(--ink);
+  box-shadow:0 0 0 2px var(--ink-2), 0 4px 14px -4px rgba(0,0,0,.6);
+}
+.coin.c1{background:radial-gradient(circle at 32% 28%, #8CF7D3, #2FCB9A)}
+.coin.c2{background:radial-gradient(circle at 32% 28%, #B7C6F5, #5E77CF);margin-left:-9px}
+.pm-name{font-family:var(--disp);font-weight:700;font-size:16.5px}
+.pm-fee{font-family:var(--mono);font-size:10.5px;color:var(--spring);background:rgba(63,224,174,.1);border:1px solid rgba(63,224,174,.28);padding:2px 8px;border-radius:99px}
+.pm-inrange{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--spring)}
+.pm-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0 4px}
+.pm-kv .k{font-size:10px;color:var(--silt);font-weight:600;text-transform:uppercase;letter-spacing:.06em}
+.pm-kv .v{font-family:var(--mono);font-size:14.5px;font-weight:600;margin-top:3px;font-variant-numeric:tabular-nums}
+.pm-kv .v.up{color:var(--spring-bright)}
+/* strata range viz */
+.rv-track{
+  position:relative;height:48px;border-radius:11px;overflow:hidden;margin-top:14px;
+  background:
+    repeating-linear-gradient(180deg,transparent 0 8px,rgba(130,152,155,.075) 8px 9px),
+    linear-gradient(180deg, rgba(4,11,12,.9), rgba(7,16,18,.9));
+  box-shadow:0 2px 8px rgba(0,0,0,.5) inset, 0 0 0 1px rgba(237,247,244,.05);
+}
+.rv-band{
+  position:absolute;top:0;bottom:0;left:18%;width:56%;overflow:hidden;
+  background:linear-gradient(180deg, rgba(63,224,174,.34), rgba(63,224,174,.07));
+  border-left:1px solid rgba(63,224,174,.5);border-right:1px solid rgba(63,224,174,.5);
+  box-shadow:0 0 24px -6px rgba(63,224,174,.4) inset;
+}
+.rv-band::after{
+  content:"";position:absolute;inset:0;
+  background:repeating-linear-gradient(64deg, transparent 0 14px, rgba(255,255,255,.05) 14px 17px);
+  animation:caustic 7s linear infinite;
+}
+@keyframes caustic{from{transform:translateX(-34px)}to{transform:translateX(0)}}
+.rv-cur{position:absolute;top:0;bottom:0;left:47%;width:2px;background:var(--spring-bright);box-shadow:0 0 10px var(--spring), 0 0 26px rgba(63,224,174,.5)}
+.rv-cur::after{
+  content:"";position:absolute;top:-1px;left:50%;transform:translateX(-50%);
+  width:8px;height:8px;border-radius:50%;background:inherit;box-shadow:inherit;
+  animation:pulse 2.2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.5)}}
+.rv-mark{position:absolute;top:0;bottom:0;width:1px;background:rgba(232,180,90,.65)}
+.rv-mark.sl{background:rgba(240,112,92,.65)}
+.rv-mark span{
+  position:absolute;top:3px;left:4px;font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.05em;
+}
+.rv-mark.tp span{color:var(--amber)}
+.rv-mark.sl span{color:var(--coral);left:auto;right:4px}
+.rv-labels{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--silt-dark);margin-top:8px}
+.rv-labels b{color:var(--foam);font-weight:500}
+.pm-foot{display:flex;align-items:center;gap:8px;margin-top:14px;font-family:var(--mono);font-size:11px;color:var(--silt)}
+.pm-foot .tag{padding:3px 9px;border-radius:99px;border:1px solid rgba(232,180,90,.3);color:var(--amber);background:rgba(232,180,90,.07)}
+.pm-foot .tag.sl{border-color:rgba(240,112,92,.3);color:var(--coral);background:rgba(240,112,92,.07)}
+.pm-foot .fees{margin-left:auto;color:var(--spring-bright)}
+
+/* ---------- flow strip ---------- */
+.flow-strip{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px;align-items:stretch}
+.flow-step{padding:18px 20px;text-align:left;transition:transform .25s var(--ease)}
+.flow-step:hover{transform:translateY(-2px)}
+.flow-step .n{font-family:var(--mono);font-size:10px;color:var(--silt-dark);letter-spacing:.12em}
+.flow-step .t{font-family:var(--disp);font-weight:700;font-size:16px;margin-top:4px}
+.flow-step .t b{color:var(--spring)}
+.flow-step .d{font-size:12.5px;color:var(--silt);margin-top:4px}
+.flow-arrow{display:flex;align-items:center;color:var(--spring);font-size:18px;opacity:.7}
+.flow-step.locked .t b{color:var(--limestone)}
+
+/* ---------- section headings ---------- */
+.sec-head{margin-bottom:22px}
+.sec-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:var(--spring);text-transform:uppercase}
+.sec-title{font-family:var(--disp);font-weight:800;font-size:clamp(24px,3.4vw,34px);letter-spacing:-.01em;margin-top:8px}
+.sec-sub{color:var(--silt);max-width:60ch;margin-top:8px;font-size:14.5px}
+
+/* ---------- features ---------- */
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.feat{padding:22px 21px;transition:transform .25s var(--ease)}
+.feat:hover{transform:translateY(-2px)}
+.feat .ico{
+  width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(180deg, rgba(63,224,174,.16), rgba(63,224,174,.05));
+  border:1px solid rgba(63,224,174,.25);color:var(--spring-bright);font-size:17px;margin-bottom:14px;
+}
+.feat h3{font-family:var(--disp);font-weight:700;font-size:15.5px;margin-bottom:6px}
+.feat p{color:var(--silt);font-size:13.5px}
+.feat p b{color:var(--foam);font-weight:600}
+
+/* ---------- trust ---------- */
+.trust-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}
+.trust-card{padding:24px}
+.trust-card h3{font-family:var(--disp);font-weight:700;font-size:17px;margin-bottom:6px}
+ul.trust{list-style:none;margin-top:8px}
+ul.trust li{padding:9px 0 9px 23px;position:relative;color:var(--silt);font-size:13.5px;border-bottom:1px dashed rgba(31,57,61,.6)}
+ul.trust li:last-child{border-bottom:none}
+ul.trust li::before{content:"◆";position:absolute;left:2px;color:var(--spring);font-size:9px;top:13px;text-shadow:0 0 8px rgba(63,224,174,.6)}
+ul.trust b{color:var(--foam);font-weight:600}
+.fine{padding:24px;display:flex;flex-direction:column}
+.fine h3{font-family:var(--disp);font-weight:700;font-size:17px;margin-bottom:10px}
+.addr-line{display:flex;justify-content:space-between;gap:10px;font-family:var(--mono);font-size:12.5px;padding:10px 0;border-bottom:1px dashed rgba(31,57,61,.6)}
+.addr-line:last-child{border-bottom:none}
+.addr-line span{color:var(--silt)}
+.addr-line b{font-weight:500;color:var(--foam)}
+.addr-line b.hl{color:var(--spring-bright)}
+.fine .note{margin-top:auto;padding-top:14px;font-size:11.5px;color:var(--silt-dark)}
+
+/* ---------- cta band ---------- */
+.cta-band{padding:40px 32px;text-align:center;overflow:hidden}
+.cta-band h2{font-family:var(--disp);font-weight:800;font-size:clamp(24px,3.4vw,34px);margin-bottom:10px}
+.cta-band p{color:var(--silt);max-width:52ch;margin:0 auto 24px;font-size:14.5px}
+.cta-band .row{display:flex;gap:13px;justify-content:center;flex-wrap:wrap}
+
+/* ---------- footer ---------- */
+footer{margin-top:46px;border-top:1px solid rgba(31,57,61,.5)}
+.waterline{height:14px;overflow:hidden;position:relative;opacity:.5}
+.waterline svg{position:absolute;left:0;top:0;width:200%;height:14px;animation:drift 16s linear infinite}
+@keyframes drift{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.foot-inner{max-width:1160px;margin:0 auto;padding:22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px;color:var(--silt-dark)}
+.foot-inner a{color:var(--silt)}
+.foot-inner a:hover{color:var(--spring)}
+.foot-inner .right{margin-left:auto}
+
+/* ---------- reveal ---------- */
+.reveal{opacity:0;transform:translateY(16px);transition:opacity .6s var(--ease), transform .6s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
+/* ---------- responsive ---------- */
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr;gap:34px;padding-top:44px}
+  .trust-grid{grid-template-columns:1fr}
+  .flow-strip{grid-template-columns:1fr}
+  .flow-arrow{transform:rotate(90deg);justify-content:center;padding:2px 0}
+}
+@media (max-width:640px){
+  .aurora,.spot{display:none}
+  .chain-chip{display:none}
+  .hero-stats{max-width:none}
+}
 @media (prefers-reduced-motion: reduce){
-  .btn,.btn:hover{transition:none;transform:none}
+  *,*::before,*::after{animation:none !important;transition:none !important}
+  html{scroll-behavior:auto}
+  .reveal{opacity:1;transform:none}
 }
 </style>
 </head>
 <body>
-<main>
-  <div class="brand">
-    <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#050E10"/><path d="M16 6c-4 5-6 8-6 11a6 6 0 0 0 12 0c0-3-2-6-6-11z" fill="#3FE0AE"/></svg>
-    <span class="brand-name">HOODPOOL</span>
+
+<div class="aurora" aria-hidden="true"><i class="a1"></i><i class="a2"></i><i class="a3"></i></div>
+<div class="spot" id="spot" aria-hidden="true"></div>
+
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <span class="brand">
+      <svg viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#050E10"/><path d="M16 6c-4 5-6 8-6 11a6 6 0 0 0 12 0c0-3-2-6-6-11z" fill="#3FE0AE"/></svg>
+      <span class="brand-name">HOODPOOL</span>
+    </span>
+    <span class="chain-chip">ROBINHOOD CHAIN · 4663</span>
+    <span class="nav-cta">
+      <a class="nav-link" href="https://github.com/fourtisf/quiver" rel="noopener">GitHub ⧉</a>
+      <a class="btn btn-primary btn-sm" href="/preview/">Design preview</a>
+    </span>
   </div>
+</nav>
 
-  <span class="chip"><span class="dot"></span> ROBINHOOD CHAIN · MAINNET 4663</span>
+<main class="wrap">
 
-  <h1>Liquidity for <em>Robinfun</em> tokens.</h1>
-  <p class="sub">
-    The non-custodial liquidity venue for the Robinfun launchpad. One-click Uniswap
-    pools for any launched token, <strong>1% of every swap to LPs</strong>, and on-chain
-    take-profit / stop-loss on positions that never leave your wallet.
-  </p>
-
-  <div class="flow">
-    <span>Launch on <b>Robinfun</b></span><span class="arrow">→</span>
-    <span>deploy liquidity on <b>Hoodpool</b></span><span class="arrow">→</span>
-    <span>lock LP in <b>Strongroom</b></span>
-  </div>
-
-  <div class="cta">
-    <a class="btn btn-primary" href="/preview/">View design preview</a>
-    <a class="btn btn-ghost" href="https://github.com/fourtisf/quiver" rel="noopener">Build progress ⧉</a>
-  </div>
-
-  <div class="cards">
-    <div class="card">
-      <h3><span class="ico">◈</span> Verified, not curated</h3>
-      <p>A token lists only if it verifies on-chain against the Robinfun factory. No allowlists, no gatekeepers.</p>
+  <!-- HERO -->
+  <section class="hero">
+    <div>
+      <span class="hero-chip"><span class="livedot"></span>IN DEVELOPMENT · CONTRACTS PRE-AUDIT</span>
+      <h1>The liquidity layer for <em>Robinfun</em> tokens.</h1>
+      <p class="sub">
+        Any token launched on Robinfun gets a one-click Uniswap pool.
+        LPs earn <strong>1% of every swap</strong>. Holders get on-chain
+        <strong>take-profit / stop-loss</strong> and live PnL — on positions that
+        never leave their wallet.
+      </p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="/preview/">View design preview</a>
+        <a class="btn btn-ghost" href="https://github.com/fourtisf/quiver" rel="noopener">Built in the open ⧉</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hstat"><div class="v"><i>1%</i></div><div class="k">every swap → LPs</div></div>
+        <div class="hstat"><div class="v">0.1%</div><div class="k">deposit fee, nothing else</div></div>
+        <div class="hstat"><div class="v">0</div><div class="k">admin keys</div></div>
+      </div>
     </div>
-    <div class="card">
-      <h3><span class="ico">◈</span> Non-custodial by design</h3>
-      <p>Positions are standard Uniswap NFTs in your wallet. Hoodpool never holds your funds between transactions.</p>
+
+    <!-- mock position card -->
+    <div class="glass pos-mock" aria-label="Illustration of a Hoodpool liquidity position">
+      <span class="pm-badge">PREVIEW</span>
+      <div class="pm-top">
+        <span class="coins"><span class="coin c1">RBN</span><span class="coin c2">ETH</span></span>
+        <span class="pm-name">RBN / WETH</span>
+        <span class="pm-fee">1.00%</span>
+        <span class="pm-inrange"><span class="livedot"></span>in range</span>
+      </div>
+      <div class="pm-grid">
+        <div class="pm-kv"><div class="k">Position value</div><div class="v">$12,480</div></div>
+        <div class="pm-kv"><div class="k">PnL</div><div class="v up">+18.4%</div></div>
+        <div class="pm-kv"><div class="k">Fees earned</div><div class="v up">$342.10</div></div>
+      </div>
+      <div class="rv-track" aria-hidden="true">
+        <div class="rv-band"></div>
+        <div class="rv-mark tp" style="left:68%"><span>TP</span></div>
+        <div class="rv-mark sl" style="left:24%"><span>SL</span></div>
+        <div class="rv-cur"></div>
+      </div>
+      <div class="rv-labels"><span>min <b>0.00071</b></span><span>current <b>0.00104</b></span><span>max <b>0.00162</b></span></div>
+      <div class="pm-foot">
+        <span class="tag">TP armed</span>
+        <span class="tag sl">SL armed</span>
+        <span class="fees">non-custodial · TWAP-triggered</span>
+      </div>
     </div>
-    <div class="card">
-      <h3><span class="ico">◈</span> TP/SL on-chain</h3>
-      <p>Arm take-profit and stop-loss with a scoped, revocable approval. TWAP-triggered — never spot-price games.</p>
+  </section>
+
+  <!-- FLOW -->
+  <section class="reveal">
+    <div class="flow-strip">
+      <div class="glass flow-step">
+        <div class="n">STEP 01 — LAUNCH</div>
+        <div class="t">Launch on <b>Robinfun</b></div>
+        <div class="d">Fair-launch bonding curve on Robinhood Chain. Verified on-chain — no allowlists, no curation.</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="glass flow-step">
+        <div class="n">STEP 02 — DEEPEN</div>
+        <div class="t">Deploy liquidity on <b>Hoodpool</b></div>
+        <div class="d">One transaction: verify, create the 1%-tier pool, zap your deposit, mint the position to your wallet.</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="glass flow-step locked">
+        <div class="n">STEP 03 — LOCK</div>
+        <div class="t">Lock LP in <b>Strongroom</b></div>
+        <div class="d">Prove commitment: lock the LP position and let the community verify it on-chain.</div>
+      </div>
     </div>
-  </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="reveal">
+    <div class="sec-head">
+      <div class="sec-eyebrow">Why Hoodpool</div>
+      <h2 class="sec-title">Everything a memecoin LP actually needs.</h2>
+      <p class="sec-sub">Not another dashboard — a venue. Pools, fees, protection and PnL in one place, enforced by contracts instead of promises.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="glass feat">
+        <div class="ico">◈</div>
+        <h3>One-click pools</h3>
+        <p>Verify → create pool → zap → mint, in <b>a single transaction</b>. Deposit either side; ETH auto-wraps, USDG welcome.</p>
+      </div>
+      <div class="glass feat">
+        <div class="ico">≈</div>
+        <h3>1% of every swap</h3>
+        <p>Every pool uses the 1% fee tier and it <b>all flows to LPs</b>. The protocol takes 0.1% of deposits — and nothing else, ever.</p>
+      </div>
+      <div class="glass feat">
+        <div class="ico">⛨</div>
+        <h3>TP/SL without custody</h3>
+        <p>Arm take-profit and stop-loss with a <b>scoped, revocable approval</b>. Triggers read a TWAP — never a spot price someone can bend for one block.</p>
+      </div>
+      <div class="glass feat">
+        <div class="ico">◎</div>
+        <h3>Every position, tracked</h3>
+        <p>Live PnL, fees and range state for <b>every position you own</b> — including ones you opened directly on Uniswap.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TRUST -->
+  <section class="reveal">
+    <div class="sec-head">
+      <div class="sec-eyebrow">Trust model</div>
+      <h2 class="sec-title">Don't trust us. We made sure you don't have to.</h2>
+    </div>
+    <div class="trust-grid">
+      <div class="glass trust-card">
+        <h3>How it stays safe</h3>
+        <ul class="trust">
+          <li><b>Non-custodial.</b> Positions are standard Uniswap NFTs in your wallet. Hoodpool never holds funds between transactions.</li>
+          <li><b>Immutable.</b> No owner, no admin keys, no upgrade hooks on core contracts. The treasury is a multisig.</li>
+          <li><b>Robinfun-gated.</b> A token lists only if it verifies against the Robinfun factory on-chain. No one can list — or delist — by hand.</li>
+          <li><b>Manipulation-resistant.</b> TP/SL executes on a time-weighted price with slippage bounds you set. Revoke the approval, and the order dies with it.</li>
+        </ul>
+      </div>
+      <div class="glass fine">
+        <h3>The fine print</h3>
+        <div class="addr-line"><span>Swap fee → LPs</span><b class="hl">1.00%</b></div>
+        <div class="addr-line"><span>Deposit fee → treasury</span><b>0.10%</b></div>
+        <div class="addr-line"><span>Other fees</span><b>none</b></div>
+        <div class="addr-line"><span>Admin keys</span><b>0</b></div>
+        <div class="addr-line"><span>Custody of your funds</span><b>never</b></div>
+        <div class="addr-line"><span>Chain</span><b>Robinhood · 4663</b></div>
+        <p class="note">Contract addresses will be published here after audit &amp; deployment.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="reveal">
+    <div class="glass cta-band">
+      <h2>Built in the open, launched when it's safe.</h2>
+      <p>Contracts are being built and audited before a single token of TVL is accepted. Watch the build, read the environment research, or explore the full product design.</p>
+      <div class="row">
+        <a class="btn btn-primary" href="/preview/">Explore the design preview</a>
+        <a class="btn btn-ghost" href="https://github.com/fourtisf/quiver" rel="noopener">Follow progress on GitHub ⧉</a>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <footer>
-  Hoodpool is in development — contracts are being built and audited before launch. ·
-  <a href="/preview/">design preview</a> · <a href="https://github.com/fourtisf/quiver" rel="noopener">github</a>
+  <div class="waterline" aria-hidden="true">
+    <svg viewBox="0 0 1200 14" preserveAspectRatio="none">
+      <path d="M0 7 Q 75 0 150 7 T 300 7 T 450 7 T 600 7 T 750 7 T 900 7 T 1050 7 T 1200 7" fill="none" stroke="#3FE0AE" stroke-width="1.5" opacity=".8"/>
+    </svg>
+  </div>
+  <div class="foot-inner">
+    <span>© 2026 HOODPOOL</span>
+    <a href="/preview/">design preview</a>
+    <a href="https://github.com/fourtisf/quiver" rel="noopener">github</a>
+    <span class="right">Launch on Robinfun → deploy on Hoodpool → lock in Strongroom</span>
+  </div>
 </footer>
+
+<script>
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // nav elevation
+  var nav = document.getElementById('nav');
+  addEventListener('scroll', function(){ nav.classList.toggle('scrolled', scrollY > 8); }, {passive:true});
+
+  // section reveal
+  var els = document.querySelectorAll('.reveal');
+  if (reduced || !('IntersectionObserver' in window)) {
+    els.forEach(function(el){ el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, {threshold:.12});
+    els.forEach(function(el){ io.observe(el); });
+  }
+
+  if (reduced) return;
+
+  // cursor spotlight + per-card glow
+  var spot = document.getElementById('spot');
+  var cards = document.querySelectorAll('.glass');
+  addEventListener('pointermove', function(ev){
+    spot.style.transform = 'translate(' + (ev.clientX - 380) + 'px,' + (ev.clientY - 380) + 'px)';
+  }, {passive:true});
+  cards.forEach(function(c){
+    c.addEventListener('pointermove', function(ev){
+      var r = c.getBoundingClientRect();
+      c.style.setProperty('--mx', (ev.clientX - r.left) + 'px');
+      c.style.setProperty('--my', (ev.clientY - r.top) + 'px');
+    }, {passive:true});
+  });
+})();
+</script>
 </body>
 </html>
