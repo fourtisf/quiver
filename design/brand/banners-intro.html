@@ -184,26 +184,35 @@ body{background:#03080a;padding:30px}
     <div class="kicker">Now live</div>
     <div class="head">250+ tokens,<br>auto-routed<br><span class="g">v2 + v3</span>.</div>
     <div class="sub">Best price across Uniswap v2 and v3 on Robinhood Chain — found for you, one tap.</div>
-    <div class="chips"><span class="chip rh">ROBINHOOD CHAIN</span><span class="chip gold">$HPL · CA COMING SOON</span></div>
+    <div class="chips"><span class="chip rh">ROBINHOOD CHAIN</span><span class="chip gold">CA COMING SOON</span></div>
   </div>
   <div class="motif">
     <svg viewBox="0 0 500 500" width="500" height="500">
+      <defs>
+        <linearGradient id="cg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#12292E"/><stop offset="1" stop-color="#0A1A1E"/></linearGradient>
+        <clipPath id="nE"><circle cx="96" cy="104" r="42"/></clipPath>
+        <clipPath id="nC"><circle cx="406" cy="120" r="42"/></clipPath>
+        <clipPath id="nS"><circle cx="80" cy="384" r="42"/></clipPath>
+        <clipPath id="nV"><circle cx="418" cy="374" r="42"/></clipPath>
+      </defs>
       <g stroke="rgba(63,224,174,.42)" stroke-width="2.5" fill="none">
         <line x1="250" y1="250" x2="96" y2="104"/>
         <line x1="250" y1="250" x2="406" y2="120"/>
         <line x1="250" y1="250" x2="80" y2="384"/>
         <line x1="250" y1="250" x2="418" y2="374"/>
       </g>
-      <g font-family="IBM Plex Mono" font-size="19" font-weight="500" text-anchor="middle">
-        <circle cx="96" cy="104" r="42" fill="#5E77CF"/><text x="96" y="111" fill="#fff">ETH</text>
-        <circle cx="406" cy="120" r="42" fill="#3E6FE0"/><text x="406" y="127" fill="#fff">USDG</text>
-        <circle cx="80" cy="384" r="42" fill="#2A2E3A"/><text x="80" y="391" fill="#EDF7F4">PONS</text>
-        <circle cx="418" cy="374" r="42" fill="#123B2E"/><text x="418" y="381" fill="#8CF5C4">WETH</text>
+      <!-- real project logos -->
+      <image href="nodelogos/ETH.png"     x="54"  y="62"  width="84" height="84" clip-path="url(#nE)"/>
+      <image href="nodelogos/USDC.png"    x="364" y="78"  width="84" height="84" clip-path="url(#nC)"/>
+      <image href="nodelogos/USDe.png"    x="38"  y="342" width="84" height="84" clip-path="url(#nS)"/>
+      <image href="nodelogos/VIRTUAL.png" x="376" y="332" width="84" height="84" clip-path="url(#nV)"/>
+      <g fill="none" stroke="rgba(237,247,244,.18)" stroke-width="2">
+        <circle cx="96" cy="104" r="42"/><circle cx="406" cy="120" r="42"/>
+        <circle cx="80" cy="384" r="42"/><circle cx="418" cy="374" r="42"/>
       </g>
       <circle cx="250" cy="250" r="70" fill="url(#cg2)"/>
       <circle cx="250" cy="250" r="70" fill="none" stroke="rgba(111,245,203,.5)" stroke-width="2.5"/>
-      <defs><linearGradient id="cg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#12292E"/><stop offset="1" stop-color="#0A1A1E"/></linearGradient></defs>
-      <path d="M250 214c-13 16-19.5 26-19.5 35.6a19.5 19.5 0 0 0 39 0c0-9.6-6.5-19.6-19.5-35.6z" fill="url(#g)" transform="scale(1)"/>
+      <path d="M250 214c-13 16-19.5 26-19.5 35.6a19.5 19.5 0 0 0 39 0c0-9.6-6.5-19.6-19.5-35.6z" fill="url(#g)"/>
     </svg>
   </div>
   <div class="foot">hoodpool<b>.fun</b> · Robinhood Chain</div>
