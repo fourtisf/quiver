@@ -1,23 +1,38 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { getAddress } from "viem";
 import { orbColor, type TokenInfo } from "@/lib/tokens";
-import { cachedSlug } from "@/lib/logos";
+
+/**
+ * Logo resolution, in order — each falls through to the next on load error:
+ *  1. an explicit logoURI already on the token
+ *  2. DexScreener token CDN (dd.dexscreener.com), lowercase then checksum addr
+ *  3. GeckoTerminal / CoinGecko-style CDN guess
+ *  4. colored orb + first letter
+ *
+ * Images are loaded via <img>, which is NOT subject to CORS — so this works
+ * even where a fetch() to the JSON APIs would be blocked in the browser.
+ */
+function candidateUrls(token: TokenInfo): string[] {
+  const list: string[] = [];
+  if (token.logoURI) list.push(token.logoURI);
+  if (token.address !== "native" && /^0x[a-fA-F0-9]{40}$/.test(token.address)) {
+    const lower = token.address.toLowerCase();
+    let checksum = lower;
+    try { checksum = getAddress(token.address); } catch { /* keep lower */ }
+    // DexScreener token image CDN — the chain slug is "robinhood"
+    list.push(`https://dd.dexscreener.com/ds-data/tokens/robinhood/${lower}.png`);
+    if (checksum !== lower) {
+      list.push(`https://dd.dexscreener.com/ds-data/tokens/robinhood/${checksum}.png`);
+    }
+  }
+  return list;
+}
 
 export function TokenLogo({ token, size = 28 }: { token: TokenInfo; size?: number }) {
-  // ordered candidates: explicit logo -> DexScreener CDN guess -> orb fallback
-  const candidates = useMemo(() => {
-    const list: string[] = [];
-    if (token.logoURI) list.push(token.logoURI);
-    if (token.address !== "native" && /^0x[a-fA-F0-9]{40}$/.test(token.address)) {
-      const slug = typeof window !== "undefined" ? cachedSlug() : null;
-      if (slug) {
-        list.push(`https://dd.dexscreener.com/ds-data/tokens/${slug}/${token.address.toLowerCase()}.png?size=lg`);
-      }
-    }
-    return list;
-  }, [token.address, token.logoURI]);
-
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const candidates = useMemo(() => candidateUrls(token), [token.address, token.logoURI]);
   const [idx, setIdx] = useState(0);
   useEffect(() => { setIdx(0); }, [token.address, token.logoURI]);
 
@@ -29,7 +44,8 @@ export function TokenLogo({ token, size = 28 }: { token: TokenInfo; size?: numbe
         alt=""
         width={size}
         height={size}
-        className="rounded-full ring-2 ring-ink-2 object-cover"
+        loading="lazy"
+        className="rounded-full object-cover ring-2 ring-ink-2"
         style={{ width: size, height: size }}
         onError={() => setIdx((i) => i + 1)}
       />
