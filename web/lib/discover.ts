@@ -48,6 +48,25 @@ type Persisted = {
   }>;
 };
 
+type MCall = { address: Address; abi: readonly unknown[]; functionName: string; args?: readonly unknown[] };
+type MResult = { status: "success" | "failure"; result?: unknown };
+
+/** Run a multicall in bounded chunks so a single eth_call never gets too big
+ * for the public RPC to answer (large aggregated calls silently fail). */
+async function multicallChunked(client: PublicClient, contracts: MCall[], size = 250): Promise<MResult[]> {
+  const out: MResult[] = [];
+  for (let i = 0; i < contracts.length; i += size) {
+    try {
+      const res = await client.multicall({ contracts: contracts.slice(i, i + size) as never, allowFailure: true });
+      out.push(...(res as MResult[]));
+    } catch {
+      // whole chunk failed — mark its slots failed and keep going
+      for (let k = 0; k < Math.min(size, contracts.length - i); k++) out.push({ status: "failure" });
+    }
+  }
+  return out;
+}
+
 function quoteUsdPerUnit(quote: QuoteAsset, ethUsd: number | null): number | null {
   return quote === "USDG" ? 1 : ethUsd;
 }
@@ -174,35 +193,25 @@ async function scan(client: PublicClient): Promise<PoolsSnapshot> {
   const from = Math.max(0, length - MAX_PAIRS);
   const indexes = Array.from({ length: length - from }, (_, i) => BigInt(from + i));
 
-  // 1) pair addresses
-  let pairs: Address[] = [];
-  try {
-    const res = await client.multicall({
-      contracts: indexes.map((i) => ({
-        address: factory, abi: v2FactoryAbi, functionName: "allPairs" as const, args: [i] as const,
-      })),
-      allowFailure: true,
-    });
-    pairs = res.filter((r) => r.status === "success").map((r) => r.result as Address);
-  } catch {
-    for (const i of indexes.slice(-40)) {
-      try {
-        pairs.push(await client.readContract({ address: factory, abi: v2FactoryAbi, functionName: "allPairs", args: [i] }));
-      } catch { break; }
-    }
-  }
+  // 1) pair addresses (chunked)
+  const pairRes = await multicallChunked(
+    client,
+    indexes.map((i) => ({
+      address: factory, abi: v2FactoryAbi, functionName: "allPairs" as const, args: [i] as const,
+    })),
+  );
+  const pairs = pairRes.filter((r) => r.status === "success").map((r) => r.result as Address);
   if (pairs.length === 0) return empty;
 
-  // 2) token0 / token1 / reserves per pair
-  const detail = await client.multicall({
-    contracts: pairs.flatMap((p) => [
+  // 2) token0 / token1 / reserves per pair (chunked)
+  const detail = await multicallChunked(
+    client,
+    pairs.flatMap((p) => [
       { address: p, abi: v2PairAbi, functionName: "token0" as const },
       { address: p, abi: v2PairAbi, functionName: "token1" as const },
       { address: p, abi: v2PairAbi, functionName: "getReserves" as const },
     ]),
-    allowFailure: true,
-  }).catch(() => null);
-  if (!detail) return empty;
+  );
 
   const quoteOf = (x: string): QuoteAsset | null => (x === weth ? "WETH" : x === usdg ? "USDG" : null);
 
@@ -238,16 +247,15 @@ async function scan(client: PublicClient): Promise<PoolsSnapshot> {
   const top = ranked.slice(0, META_TOP);
   if (top.length === 0) return { ...empty, scannedPairs: pairs.length };
 
-  // 3) metadata for the deepest pools
-  const meta = await client.multicall({
-    contracts: top.flatMap((r) => [
+  // 3) metadata for the deepest pools (chunked)
+  const meta = await multicallChunked(
+    client,
+    top.flatMap((r) => [
       { address: r.tokenAddr as Address, abi: erc20Abi, functionName: "symbol" as const },
       { address: r.tokenAddr as Address, abi: erc20Abi, functionName: "name" as const },
       { address: r.tokenAddr as Address, abi: erc20Abi, functionName: "decimals" as const },
     ]),
-    allowFailure: true,
-  }).catch(() => null);
-  if (!meta) return { ...empty, scannedPairs: pairs.length };
+  );
 
   const pools: PoolInfo[] = [];
   for (let i = 0; i < top.length; i++) {
