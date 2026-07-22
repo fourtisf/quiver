@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:512px;height:512px;background:transparent;overflow:hidden}
+.coin{
+  position:absolute;left:14px;top:14px;width:484px;height:484px;border-radius:50%;padding:16px;
+  background:
+    conic-gradient(from 215deg,
+      #163A3C 0deg, #59E5BD 42deg, #2FCB9A 78deg, #0F2A2E 128deg,
+      #CBB891 172deg, #123034 214deg, #6FF5CB 262deg, #1A3E42 310deg, #163A3C 360deg);
+  box-shadow:0 0 0 1.5px rgba(4,10,12,.95);
+}
+.face{
+  position:relative;width:100%;height:100%;border-radius:50%;
+  background:
+    radial-gradient(290px 290px at 33% 24%, rgba(255,255,255,.14), transparent 46%),
+    radial-gradient(350px 350px at 70% 84%, rgba(63,224,174,.13), transparent 58%),
+    repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,.016) 0 3px, transparent 3px 14px),
+    linear-gradient(155deg,#132C31 0%,#0A1B1F 52%,#0F2429 100%);
+  box-shadow:0 3px 6px rgba(0,0,0,.7) inset, 0 -20px 48px rgba(63,224,174,.09) inset, 0 1.5px 0 rgba(255,255,255,.14) inset;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+}
+.face::before{content:"";position:absolute;inset:22px;border-radius:50%;border:1.5px solid rgba(111,245,203,.15)}
+.face::after{content:"";position:absolute;inset:0;border-radius:50%;background:linear-gradient(200deg, rgba(255,255,255,.11), transparent 33%)}
+.face svg{width:246px;height:246px;filter:drop-shadow(0 0 34px rgba(63,224,174,.55))}
+</style></head>
+<body>
+<div class="coin"><div class="face">
+  <svg viewBox="0 0 32 32">
+    <defs>
+      <linearGradient id="cg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#84F8D4"/><stop offset="1" stop-color="#2FCB9A"/>
+      </linearGradient>
+      <linearGradient id="chl" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#FFFFFF" stop-opacity=".65"/>
+        <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="M16 4.6c-4.6 5.8-6.9 9.2-6.9 12.6a6.9 6.9 0 0 0 13.8 0c0-3.4-2.3-6.8-6.9-12.6z" fill="url(#cg)"/>
+    <path d="M12.2 15.4c.5-2.3 1.8-4.9 3.8-7.8-3 4.1-4.5 6.9-4.8 9.3-.1 1 .8 1 1 .1z" fill="url(#chl)"/>
+  </svg>
+</div></div>
+</body></html>

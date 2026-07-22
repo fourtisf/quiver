@@ -26,3 +26,13 @@ those and fix the paths, or swap the `@font-face` block for the Google Fonts
 All also served from the website at `hoodpool.fun/brand/…` (site/brand/).
 Note: $HPL does not exist yet (out of scope v1) — the coin renders the brand
 mark without a ticker on purpose, so the banner doesn't promise a token.
+
+## v3 — premium logo set (2026-07-22)
+
+| File | Use |
+|---|---|
+| `hoodpool-logo-premium-1024.png` | X profile photo, premium (metallic coin + ripples) |
+| `hoodpool-logo-premium-mark-1024.png` | Coin mark, transparent — any dark surface |
+| `hoodpool-logo-lockup-3120x680.png` | Logo + wordmark lockup, transparent, for dark backgrounds |
+| `hoodpool-logo-lockup-onlight-3120x680.png` | Same lockup for light backgrounds |
+| `hoodpool-banner-x-v3-*.png` | X header v3 (current) |

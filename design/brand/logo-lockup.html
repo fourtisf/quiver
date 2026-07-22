@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+@font-face{
+  font-family:"Bricolage Grotesque";font-weight:800;
+  src:url("file:///tmp/claude-0/-home-user-quiver/a648b577-08fb-5d1d-bf07-f5e89479ceb4/scratchpad/node_modules/@fontsource/bricolage-grotesque/files/bricolage-grotesque-latin-800-normal.woff2") format("woff2");
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1560px;height:340px;background:transparent;overflow:hidden}
+.row{position:absolute;left:20px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:44px}
+.tile{
+  width:190px;height:190px;border-radius:48px;position:relative;flex-shrink:0;
+  background:linear-gradient(180deg,#0D2126,#071316);
+  box-shadow:
+    0 0 0 2px rgba(111,245,203,.42),
+    0 0 0 5px rgba(9,20,23,1),
+    0 0 0 7px rgba(111,245,203,.15),
+    0 3px 0 rgba(255,255,255,.16) inset,
+    0 -20px 46px rgba(63,224,174,.14) inset,
+    0 0 80px -12px rgba(63,224,174,.45);
+  display:flex;align-items:center;justify-content:center;
+}
+.tile::after{content:"";position:absolute;inset:0;border-radius:48px;background:linear-gradient(205deg, rgba(255,255,255,.12), transparent 38%)}
+.tile svg{width:118px;height:118px;filter:drop-shadow(0 0 30px rgba(63,224,174,.6))}
+.wordmark{
+  font-family:"Bricolage Grotesque";font-weight:800;font-size:158px;letter-spacing:.115em;line-height:1;
+  background:linear-gradient(180deg,#FDFFFE 6%,#D9EEE6 40%,#9CC7B8 78%,#7FAF9F 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  white-space:nowrap;
+}
+</style></head>
+<body>
+<div class="row">
+  <span class="tile">
+    <svg viewBox="0 0 32 32">
+      <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#6FF5CB"/><stop offset="1" stop-color="#2FCB9A"/>
+      </linearGradient></defs>
+      <path d="M16 5c-4.4 5.5-6.6 8.8-6.6 12.1a6.6 6.6 0 0 0 13.2 0C22.6 13.8 20.4 10.5 16 5z" fill="url(#g)"/>
+    </svg>
+  </span>
+  <span class="wordmark">HOODPOOL</span>
+</div>
+</body></html>
