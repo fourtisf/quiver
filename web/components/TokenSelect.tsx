@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { isAddress, type Address } from "viem";
+import { isAddress } from "viem";
 import { usePublicClient } from "wagmi";
 import { erc20Abi } from "@/lib/abis";
-import { CORE_TOKENS, fetchRobinfunTokens, type TokenInfo } from "@/lib/tokens";
+import { CORE_TOKENS, type TokenInfo } from "@/lib/tokens";
 import { discoverOnchainTokens } from "@/lib/discover";
 import { TokenLogo } from "./TokenLogo";
 import { shortAddr } from "@/lib/format";
@@ -21,7 +21,6 @@ export function TokenSelect({
   exclude?: string;
 }) {
   const [query, setQuery] = useState("");
-  const [robinfun, setRobinfun] = useState<TokenInfo[]>([]);
   const [discovered, setDiscovered] = useState<TokenInfo[]>([]);
   const [scanning, setScanning] = useState(false);
   const [resolved, setResolved] = useState<TokenInfo | null>(null);
@@ -31,9 +30,6 @@ export function TokenSelect({
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    fetchRobinfunTokens().then((list) => {
-      if (!cancelled) setRobinfun(list);
-    });
     if (client) {
       setScanning(true);
       discoverOnchainTokens(client)
@@ -78,26 +74,13 @@ export function TokenSelect({
     !!exclude && addr.toLowerCase() === exclude.toLowerCase();
 
   const list = useMemo(() => {
-    // merge order: core -> launchpad list (has logos) -> on-chain discovered;
-    // launchpad logos win for addresses present in both
-    const logoByAddr = new Map<string, string>();
-    for (const t of robinfun) {
-      if (t.logoURI) logoByAddr.set(t.address.toLowerCase(), t.logoURI);
-    }
     const seen = new Set(CORE_TOKENS.map((t) => t.address.toLowerCase()));
     const merged = [...CORE_TOKENS];
-    for (const t of robinfun) {
-      const key = t.address.toLowerCase();
-      if (!seen.has(key)) {
-        seen.add(key);
-        merged.push(t);
-      }
-    }
     for (const t of discovered) {
       const key = t.address.toLowerCase();
       if (!seen.has(key)) {
         seen.add(key);
-        merged.push({ ...t, logoURI: logoByAddr.get(key) });
+        merged.push(t);
       }
     }
     // flag repeated symbols: first occurrence (deepest pool) is trusted,
@@ -119,24 +102,10 @@ export function TokenSelect({
         t.address.toLowerCase() === q,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [robinfun, discovered, query, exclude]);
+  }, [discovered, query, exclude]);
 
-  /* Robinfun list entries assume 18 decimals; verify on-chain at selection so
-   * a nonstandard token can't corrupt every amount in the swap form. */
-  async function selectVerified(t: TokenInfo) {
-    if (t.robinfun && client) {
-      try {
-        const decimals = await Promise.race([
-          client.readContract({ address: t.address as Address, abi: erc20Abi, functionName: "decimals" }),
-          new Promise<never>((_, rej) => setTimeout(() => rej(new Error("timeout")), 4000)),
-        ]);
-        onSelect({ ...t, decimals });
-        return;
-      } catch {
-        /* fall through with the listed decimals */
-      }
-    }
-    onSelect(t);
+  function selectVerified(t: TokenInfo) {
+    onSelect(t); // discovered tokens carry on-chain-read decimals already
   }
 
   if (!open) return null;
@@ -242,7 +211,7 @@ function TokenRow({
         <span className="block truncate text-xs text-silt">{token.name}</span>
       </span>
       <span className="ml-auto text-right font-mono text-[11px] leading-tight text-silt-dark">
-        {note ?? (token.robinfun ? "launchpad" : token.address === "native" ? "" : shortAddr(token.address))}
+        {note ?? (token.address === "native" ? "" : shortAddr(token.address))}
         {tvl ? <span className="block text-[10px] text-silt">TVL {tvl}</span> : null}
       </span>
     </button>

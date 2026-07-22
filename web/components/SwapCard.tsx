@@ -116,7 +116,9 @@ export function SwapCard() {
 
   const path = tokenOut ? pathFor(tokenIn, tokenOut) : undefined;
   const degenerateRoute = tokenOut !== null && path === null;
-  const hasRobinfunLeg = Boolean(tokenIn.robinfun || tokenOut?.robinfun);
+  const CORE = new Set(["native", ADDRESSES.weth.toLowerCase(), ADDRESSES.usdg.toLowerCase()]);
+  const hasMemeLeg =
+    !CORE.has(tokenIn.address.toLowerCase()) || (tokenOut !== null && !CORE.has(tokenOut.address.toLowerCase()));
 
   // ---- balances -----------------------------------------------------------
   const nativeBal = useBalance({ address: account, query: { enabled: isConnected } });
@@ -420,10 +422,10 @@ export function SwapCard() {
           <div className="flex justify-between"><span>Route</span>
             <span className="text-foam">{path && path.length === 3 ? `${tokenIn.symbol} → WETH → ${tokenOut?.symbol}` : "direct"}</span>
           </div>
-          {hasRobinfunLeg ? (
+          {hasMemeLeg ? (
             <p className="border-t border-stratum/60 pt-1.5 text-amber">
-              Launchpad token: a creator levy (0–10%) may be taken on transfer.
-              Actual receipt can be below the estimate — set slippage above the levy.
+              Some tokens take a transfer tax. If the swap reverts or receipt is
+              below the estimate, raise slippage above the token&apos;s tax.
             </p>
           ) : null}
         </div>
