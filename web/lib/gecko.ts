@@ -10,7 +10,9 @@ import type { TokenInfo } from "./tokens";
 
 const NETWORK = "robinhood";
 const PAGES = 5;
-const CACHE_KEY = "hoodpool.gecko.tokens.v1";
+// bump the version whenever the cached token shape changes (v2 adds marketCapUsd)
+// so old browser caches without the new fields are discarded, not reused.
+const CACHE_KEY = "hoodpool.gecko.tokens.v2";
 const CACHE_TTL_MS = 10 * 60 * 1000;
 
 type Ranked = TokenInfo & { tvlUsd: number };
