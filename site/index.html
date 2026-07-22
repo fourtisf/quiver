@@ -311,6 +311,11 @@ footer{margin-top:46px;border-top:1px solid rgba(31,57,61,.5)}
   .aurora,.spot{display:none}
   .chain-chip{display:none}
   .hero-stats{max-width:none}
+  .nav-inner{gap:10px}
+  .nav-cta .nav-link{display:none}      /* keep only the primary CTA on phones */
+  .nav-cta{gap:0}
+  h1{font-size:clamp(30px,8vw,44px)}
+  .hero-cta .btn{flex:1;justify-content:center}
 }
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none !important;transition:none !important}

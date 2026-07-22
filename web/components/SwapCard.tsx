@@ -353,29 +353,45 @@ export function SwapCard() {
 
   return (
     <div className="w-full max-w-md rounded-lg border border-stratum bg-basin p-5 shadow-2xl">
-      <div className="mb-4 flex items-center justify-between gap-2">
-        <h2 className="font-disp text-lg font-bold">Swap</h2>
-        <div className="flex items-center gap-1 font-mono text-[11px] text-silt">
-          slippage
-          {SLIPPAGE_PRESETS.map((s) => (
-            <button
-              key={s}
-              onClick={() => { setSlippage(s); setCustomSlip(""); }}
-              className={`rounded-md px-2 py-1 ${slippage === s && customSlip === "" ? "bg-spring/15 text-spring" : "hover:text-foam"}`}
-            >
-              {s}%
-            </button>
-          ))}
-          <span className={`flex items-center rounded-md px-1.5 py-1 ${customSlip !== "" ? "bg-spring/15 text-spring" : ""}`}>
+      <div className="mb-4">
+        <h2 className="mb-3 font-disp text-lg font-bold">Swap</h2>
+        <div className="flex items-center gap-1 rounded-lg border border-stratum/70 bg-ink/50 p-1">
+          <span className="px-1.5 font-mono text-[10px] uppercase tracking-wider text-silt-dark">
+            Slippage
+          </span>
+          {SLIPPAGE_PRESETS.map((s) => {
+            const active = slippage === s && customSlip === "";
+            return (
+              <button
+                key={s}
+                onClick={() => { setSlippage(s); setCustomSlip(""); }}
+                className={`rounded-md px-2.5 py-1 font-mono text-[11px] transition ${
+                  active ? "bg-spring/15 text-spring" : "text-silt hover:text-foam"
+                }`}
+              >
+                {s}%
+              </button>
+            );
+          })}
+          <div
+            className={`ml-auto flex items-center rounded-md border px-2 py-1 transition ${
+              customSlip !== "" ? "border-spring/40 bg-spring/10" : "border-stratum/70"
+            }`}
+          >
             <input
               value={customSlip}
               onChange={(e) => applyCustomSlip(e.target.value)}
-              placeholder="…"
+              placeholder="Custom"
+              inputMode="decimal"
               aria-label="Custom slippage percent"
-              className="w-8 bg-transparent text-right outline-none placeholder:text-silt-dark"
+              className={`w-14 bg-transparent text-right font-mono text-[11px] outline-none placeholder:text-silt-dark ${
+                customSlip !== "" ? "text-spring" : "text-foam"
+              }`}
             />
-            %
-          </span>
+            <span className={`pl-0.5 font-mono text-[11px] ${customSlip !== "" ? "text-spring" : "text-silt-dark"}`}>
+              %
+            </span>
+          </div>
         </div>
       </div>
 
