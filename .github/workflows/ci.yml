@@ -26,6 +26,20 @@ jobs:
       - name: forge test
         run: FOUNDRY_PROFILE=ci forge test -vvv
 
+  preflight:
+    name: on-chain preflight (Robinhood Chain mainnet)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: verify chain id, contract bytecode, live router quote
+        run: pnpm --filter @quiver/web preflight
+
   node:
     name: web + indexer + keeper (pnpm)
     runs-on: ubuntu-latest
