@@ -37,8 +37,8 @@ export function TokenLogo({ token, size = 28 }: { token: TokenInfo; size?: numbe
   const [idx, setIdx] = useState(0);
   useEffect(() => { setIdx(0); }, [token.address, token.logoURI]);
 
-  if (idx < candidates.length) {
-    return (
+  const inner =
+    idx < candidates.length ? (
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={candidates[idx]}
@@ -50,21 +50,42 @@ export function TokenLogo({ token, size = 28 }: { token: TokenInfo; size?: numbe
         style={{ width: size, height: size }}
         onError={() => setIdx((i) => i + 1)}
       />
+    ) : (
+      // Fallback: colored orb + first letter (prototype behavior)
+      <span
+        aria-hidden
+        className="flex items-center justify-center rounded-full font-mono font-semibold text-ink ring-2 ring-ink-2"
+        style={{
+          width: size,
+          height: size,
+          fontSize: size * 0.38,
+          background: `radial-gradient(circle at 32% 28%, #ffffff55, transparent 40%), ${orbColor(token.address)}`,
+        }}
+      >
+        {token.symbol.slice(0, 1).toUpperCase()}
+      </span>
     );
-  }
-  // Fallback: colored orb + first letter (prototype behavior)
+
+  // Every token here lives on Robinhood Chain — stamp the chain badge on the
+  // corner of the logo, the way Uniswap marks a token with its network.
+  return (
+    <span className="relative inline-flex flex-shrink-0" style={{ width: size, height: size }}>
+      {inner}
+      <ChainBadge size={size} />
+    </span>
+  );
+}
+
+/** Small Robinhood-green disc in the bottom-right corner = "on Robinhood Chain". */
+function ChainBadge({ size }: { size: number }) {
+  const b = Math.max(9, Math.round(size * 0.42));
+  const off = -Math.round(b * 0.18);
   return (
     <span
       aria-hidden
-      className="flex items-center justify-center rounded-full font-mono font-semibold text-ink ring-2 ring-ink-2"
-      style={{
-        width: size,
-        height: size,
-        fontSize: size * 0.38,
-        background: `radial-gradient(circle at 32% 28%, #ffffff55, transparent 40%), ${orbColor(token.address)}`,
-      }}
-    >
-      {token.symbol.slice(0, 1).toUpperCase()}
-    </span>
+      title="Robinhood Chain"
+      className="absolute rounded-full border-2 border-ink-2 bg-[#00C805]"
+      style={{ width: b, height: b, right: off, bottom: off }}
+    />
   );
 }
