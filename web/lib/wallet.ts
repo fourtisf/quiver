@@ -15,7 +15,8 @@ export type LpPosition = {
   lpBalance: bigint;
   sharePct: number;
   underlyingToken: bigint;
-  underlyingWeth: bigint;
+  /** underlying amount of the pool's quote asset (WETH or USDG) */
+  underlyingQuote: bigint;
   valueUsd: number | null;
 };
 
@@ -24,7 +25,7 @@ export async function fetchLpPositions(
   client: PublicClient,
   owner: Address,
   pools: PoolInfo[],
-  ethUsd: number | null,
+  _ethUsd: number | null,
 ): Promise<LpPosition[]> {
   if (pools.length === 0) return [];
   const res = await client.multicall({
@@ -43,10 +44,11 @@ export async function fetchLpPositions(
     if (lpBalance === 0n || totalSupply === 0n) continue;
     const p = pools[i];
     const underlyingToken = (p.reserveToken * lpBalance) / totalSupply;
-    const underlyingWeth = (p.reserveWeth * lpBalance) / totalSupply;
+    const underlyingQuote = (p.reserveQuote * lpBalance) / totalSupply;
     const sharePct = Number((lpBalance * 1_000_000n) / totalSupply) / 10_000;
-    const valueUsd = ethUsd !== null ? 2 * Number(formatUnits(underlyingWeth, 18)) * ethUsd : null;
-    out.push({ pool: p, lpBalance, sharePct, underlyingToken, underlyingWeth, valueUsd });
+    // value = pool TVL × the owner's share (works for WETH- and USDG-quoted pools)
+    const valueUsd = p.tvlUsd !== null ? (p.tvlUsd * sharePct) / 100 : null;
+    out.push({ pool: p, lpBalance, sharePct, underlyingToken, underlyingQuote, valueUsd });
   }
   return out.sort((a, b) => (b.valueUsd ?? 0) - (a.valueUsd ?? 0));
 }

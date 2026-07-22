@@ -82,7 +82,7 @@ function PositionsScreenInner() {
               <div key={pos.pool.pair} className="rounded-lg border border-stratum bg-basin p-5">
                 <div className="flex flex-wrap items-center gap-3">
                   <TokenLogo token={pos.pool.token} size={30} />
-                  <span className="font-disp text-base font-bold">{pos.pool.token.symbol} / WETH</span>
+                  <span className="font-disp text-base font-bold">{pos.pool.token.symbol} / {pos.pool.quote}</span>
                   <span className="rounded-full border border-spring/30 bg-spring/10 px-2 py-0.5 font-mono text-[10.5px] text-spring">
                     v2 LP
                   </span>
@@ -110,9 +110,9 @@ function PositionsScreenInner() {
                     </div>
                   </div>
                   <div>
-                    <div className="font-mono text-[10px] uppercase tracking-wider text-silt">WETH</div>
+                    <div className="font-mono text-[10px] uppercase tracking-wider text-silt">{pos.pool.quote}</div>
                     <div className="mt-1 font-mono text-[15px] font-semibold tabular-nums">
-                      {fmtAmount(pos.underlyingWeth, 18)}
+                      {fmtAmount(pos.underlyingQuote, pos.pool.quote === "USDG" ? 6 : 18)}
                     </div>
                   </div>
                 </div>

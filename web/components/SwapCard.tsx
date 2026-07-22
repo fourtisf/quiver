@@ -13,6 +13,8 @@ import { erc20Abi, v2RouterAbi } from "@/lib/abis";
 import { ADDRESSES } from "@/lib/addresses";
 import { NATIVE_ETH, type TokenInfo } from "@/lib/tokens";
 import { discoverPools, getEthUsd } from "@/lib/discover";
+import { candidatePaths } from "@/lib/routes";
+import { useQuery } from "@tanstack/react-query";
 import { fmtAmount } from "@/lib/format";
 import { TokenLogo } from "./TokenLogo";
 import { TokenSelect } from "./TokenSelect";
@@ -25,15 +27,6 @@ function sameToken(a?: string, b?: string): boolean {
   return !!a && !!b && a.toLowerCase() === b.toLowerCase();
 }
 
-/** null = degenerate route (wrap/unwrap or identical tokens) */
-function pathFor(tokenIn: TokenInfo, tokenOut: TokenInfo): Address[] | null {
-  const weth = ADDRESSES.weth as Address;
-  const a = tokenIn.address === "native" ? weth : (tokenIn.address as Address);
-  const b = tokenOut.address === "native" ? weth : (tokenOut.address as Address);
-  if (sameToken(a, b)) return null;
-  if (sameToken(a, weth) || sameToken(b, weth)) return [a, b];
-  return [a, weth, b];
-}
 
 function errText(e: unknown, fallback: string): string {
   const msg =
@@ -117,8 +110,11 @@ export function SwapCard() {
   }, [amountRaw, tokenIn.decimals]);
   const debouncedAmountIn = useDebounced(amountIn, 400);
 
-  const path = tokenOut ? pathFor(tokenIn, tokenOut) : undefined;
-  const degenerateRoute = tokenOut !== null && path === null;
+  const routes = useMemo(
+    () => (tokenOut ? candidatePaths(tokenIn, tokenOut) : []),
+    [tokenIn, tokenOut],
+  );
+  const degenerateRoute = tokenOut !== null && routes.length === 0;
   const CORE = new Set(["native", ADDRESSES.weth.toLowerCase(), ADDRESSES.usdg.toLowerCase()]);
   const hasMemeLeg =
     !CORE.has(tokenIn.address.toLowerCase()) || (tokenOut !== null && !CORE.has(tokenOut.address.toLowerCase()));
@@ -135,23 +131,42 @@ export function SwapCard() {
   const balanceIn =
     tokenIn.address === "native" ? nativeBal.data?.value : (tokenInBal.data as bigint | undefined);
 
-  // ---- quote (debounced) --------------------------------------------------
-  const quote = useReadContract({
-    address: ADDRESSES.v2Router02 as Address,
-    abi: v2RouterAbi,
-    functionName: "getAmountsOut",
-    args: debouncedAmountIn && path ? [debouncedAmountIn, path] : undefined,
-    query: {
-      enabled: Boolean(debouncedAmountIn && path),
-      refetchInterval: 15_000,
-      retry: 1,
+  // ---- best-path quote (debounced): evaluate every candidate route --------
+  const routesKey = routes.map((p) => p.join(">")).join("|");
+  const bestQuote = useQuery({
+    queryKey: ["quote", routesKey, debouncedAmountIn?.toString() ?? ""],
+    enabled: Boolean(client && debouncedAmountIn && routes.length > 0),
+    refetchInterval: 15_000,
+    retry: 1,
+    queryFn: async () => {
+      const res = await client!.multicall({
+        contracts: routes.map((p) => ({
+          address: ADDRESSES.v2Router02 as Address,
+          abi: v2RouterAbi,
+          functionName: "getAmountsOut" as const,
+          args: [debouncedAmountIn!, p] as const,
+        })),
+        allowFailure: true,
+      });
+      let best: { path: Address[]; amounts: readonly bigint[] } | null = null;
+      for (let i = 0; i < res.length; i++) {
+        const r = res[i];
+        if (r.status !== "success") continue;
+        const amts = r.result as readonly bigint[];
+        const out = amts[amts.length - 1];
+        if (best === null || out > best.amounts[best.amounts.length - 1]) {
+          best = { path: routes[i], amounts: amts };
+        }
+      }
+      if (best === null) throw new Error("no route with liquidity");
+      return best;
     },
   });
-  // never show numbers from an errored or stale-args quote
-  const amounts =
-    !quote.isError && debouncedAmountIn === amountIn
-      ? (quote.data as readonly bigint[] | undefined)
-      : undefined;
+  // only trust a quote whose input matches the current (debounced == live) amount
+  const freshQuote =
+    debouncedAmountIn === amountIn && !bestQuote.isError ? bestQuote.data : undefined;
+  const path = freshQuote?.path;
+  const amounts = freshQuote?.amounts;
   const amountOut = amounts?.[amounts.length - 1];
   const minOut =
     amountOut !== undefined
@@ -184,8 +199,17 @@ export function SwapCard() {
     return `1 ${tokenIn.symbol} ≈ ${(outF / inF).toLocaleString("en-US", { maximumFractionDigits: 6 })} ${tokenOut.symbol}`;
   }, [debouncedAmountIn, amountOut, tokenIn, tokenOut]);
 
+  const routeLabel = useMemo(() => {
+    if (!path || !tokenOut) return "—";
+    if (path.length === 2) return "direct";
+    const mids = path.slice(1, -1).map((a) =>
+      a.toLowerCase() === ADDRESSES.weth.toLowerCase() ? "WETH"
+        : a.toLowerCase() === ADDRESSES.usdg.toLowerCase() ? "USDG" : "…");
+    return `${tokenIn.symbol} → ${mids.join(" → ")} → ${tokenOut.symbol}`;
+  }, [path, tokenIn, tokenOut]);
+
   const wrongNetwork = isConnected && chainId !== 4663;
-  const quoteFailed = Boolean(debouncedAmountIn && path && quote.isError);
+  const quoteFailed = Boolean(debouncedAmountIn && routes.length > 0 && bestQuote.isError);
   const insufficient = amountIn !== null && balanceIn !== undefined && amountIn > balanceIn;
 
   function applyCustomSlip(v: string) {
@@ -313,13 +337,16 @@ export function SwapCard() {
     return Number(formatUnits(amount, 18)) * ethUsd;
   }
   const wethIdx = path ? path.findIndex((a) => a.toLowerCase() === wethLower) : -1;
+  const usdgIdx = path ? path.findIndex((a) => a.toLowerCase() === usdgLower) : -1;
   const wethLegAmt = amounts && wethIdx >= 0 ? amounts[wethIdx] : undefined;
+  const usdgLegAmt = amounts && usdgIdx >= 0 ? amounts[usdgIdx] : undefined;
   function usdFor(token: TokenInfo | null, amount: bigint | undefined): string | undefined {
     if (!token || amount === undefined) return undefined;
     let v: number | null = null;
     const addr = token.address.toLowerCase();
     if (token.address === "native" || addr === wethLower) v = usdOfWeth(amount);
     else if (addr === usdgLower) v = Number(formatUnits(amount, 6));
+    else if (usdgLegAmt !== undefined) v = Number(formatUnits(usdgLegAmt, 6)); // USDG-routed
     else v = usdOfWeth(wethLegAmt);
     if (v === null || !Number.isFinite(v)) return undefined;
     return `≈ $${v.toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
@@ -340,7 +367,7 @@ export function SwapCard() {
             : insufficient
               ? { label: `Insufficient ${tokenIn.symbol}`, disabled: true }
               : quoteFailed
-                ? { label: "No pool yet (token may not have graduated)", disabled: true }
+                ? { label: "No route / liquidity for this pair", disabled: true }
                 : amountOut === undefined
                   ? { label: "Fetching quote…", disabled: true }
                   : dustOutput
@@ -439,7 +466,7 @@ export function SwapCard() {
             </div>
           ) : null}
           <div className="flex justify-between"><span>Route</span>
-            <span className="text-foam">{path && path.length === 3 ? `${tokenIn.symbol} → WETH → ${tokenOut?.symbol}` : "direct"}</span>
+            <span className="text-foam">{routeLabel}</span>
           </div>
           {hasMemeLeg ? (
             <p className="border-t border-stratum/60 pt-1.5 text-amber">

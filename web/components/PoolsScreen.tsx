@@ -85,7 +85,7 @@ function PoolsScreenInner() {
                 <th className="px-4 py-3 font-medium">Pool</th>
                 <th className="px-4 py-3 text-right font-medium">Price</th>
                 <th className="px-4 py-3 text-right font-medium">TVL</th>
-                <th className="px-4 py-3 text-right font-medium">Depth (WETH)</th>
+                <th className="px-4 py-3 text-right font-medium">Depth</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -97,7 +97,7 @@ function PoolsScreenInner() {
                     <span className="flex items-center gap-2.5">
                       <TokenLogo token={p.token} size={26} />
                       <span>
-                        <span className="block text-sm font-semibold">{p.token.symbol} / WETH</span>
+                        <span className="block text-sm font-semibold">{p.token.symbol} / {p.quote}</span>
                         <span className="block text-xs text-silt">{p.token.name}</span>
                       </span>
                     </span>
@@ -105,7 +105,7 @@ function PoolsScreenInner() {
                   <td className="px-4 py-3 text-right font-mono text-sm tabular-nums">{fmtUsd(p.priceUsd)}</td>
                   <td className="px-4 py-3 text-right font-mono text-sm tabular-nums text-foam">{fmtUsd(p.tvlUsd)}</td>
                   <td className="px-4 py-3 text-right font-mono text-xs tabular-nums text-silt">
-                    {fmtAmount(p.reserveWeth, 18, 3)}
+                    {fmtAmount(p.reserveQuote, p.quote === "USDG" ? 6 : 18, p.quote === "USDG" ? 0 : 3)} {p.quote}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <Link

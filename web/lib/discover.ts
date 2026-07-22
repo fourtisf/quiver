@@ -6,17 +6,21 @@ import type { TokenInfo } from "./tokens";
 
 /**
  * On-chain discovery: enumerate the newest Uniswap v2 pairs straight from the
- * factory, keep every WETH-quoted pair, resolve counter-token metadata and
- * reserves. Powers the token picker, the Pools page, Positions and Portfolio —
- * no indexer, no API. ETH/USD comes from the WETH/USDG pair.
+ * factory, keep every pair quoted against WETH *or USDG*, resolve counter-token
+ * metadata and reserves, and rank by USD TVL so the biggest-cap tokens on
+ * Robinhood Chain surface at the top. No indexer, no API.
  */
+
+export type QuoteAsset = "WETH" | "USDG";
 
 export type PoolInfo = {
   pair: Address;
   token: TokenInfo;
   reserveToken: bigint;
-  reserveWeth: bigint;
-  /** null when ETH/USD is unavailable */
+  /** which blue-chip asset the token is paired against */
+  quote: QuoteAsset;
+  /** reserve of the quote asset (WETH 18dec / USDG 6dec) */
+  reserveQuote: bigint;
   tvlUsd: number | null;
   priceUsd: number | null;
 };
@@ -28,17 +32,44 @@ export type PoolsSnapshot = {
   scannedPairs: number;
 };
 
-const MAX_PAIRS = 400;
-const META_TOP = 150; // metadata fetched for the deepest N pools
-const CACHE_KEY = "hoodpool.pools.v2";
+const MAX_PAIRS = 600;
+const META_TOP = 180; // metadata fetched for the deepest N pools
+const CACHE_KEY = "hoodpool.pools.v3"; // bumped: shape now carries quote asset
 const CACHE_TTL_MS = 5 * 60 * 1000;
+const USDG_DECIMALS = 6;
 
 type Persisted = {
   at: number;
   ethUsd: number | null;
   scannedPairs: number;
-  pools: Array<{ pair: string; token: TokenInfo; reserveToken: string; reserveWeth: string }>;
+  pools: Array<{
+    pair: string; token: TokenInfo; reserveToken: string;
+    quote: QuoteAsset; reserveQuote: string;
+  }>;
 };
+
+function quoteUsdPerUnit(quote: QuoteAsset, ethUsd: number | null): number | null {
+  return quote === "USDG" ? 1 : ethUsd;
+}
+function quoteDecimals(quote: QuoteAsset): number {
+  return quote === "USDG" ? USDG_DECIMALS : 18;
+}
+
+function finalizePool(
+  base: { pair: Address; token: TokenInfo; reserveToken: bigint; quote: QuoteAsset; reserveQuote: bigint },
+  ethUsd: number | null,
+): PoolInfo {
+  let tvlUsd: number | null = null;
+  let priceUsd: number | null = null;
+  const perUnit = quoteUsdPerUnit(base.quote, ethUsd);
+  if (perUnit !== null && base.reserveQuote > 0n) {
+    const q = Number(formatUnits(base.reserveQuote, quoteDecimals(base.quote)));
+    tvlUsd = 2 * q * perUnit;
+    const tok = Number(formatUnits(base.reserveToken, base.token.decimals));
+    if (tok > 0) priceUsd = (q * perUnit) / tok;
+  }
+  return { ...base, tvlUsd, priceUsd };
+}
 
 function readCache(): PoolsSnapshot | null {
   try {
@@ -54,7 +85,8 @@ function readCache(): PoolsSnapshot | null {
         pair: x.pair as Address,
         token: x.token,
         reserveToken: BigInt(x.reserveToken),
-        reserveWeth: BigInt(x.reserveWeth),
+        quote: x.quote,
+        reserveQuote: BigInt(x.reserveQuote),
       }, p.ethUsd)),
     };
   } catch {
@@ -65,31 +97,14 @@ function readCache(): PoolsSnapshot | null {
 function writeCache(s: PoolsSnapshot) {
   try {
     const p: Persisted = {
-      at: s.at,
-      ethUsd: s.ethUsd,
-      scannedPairs: s.scannedPairs,
+      at: s.at, ethUsd: s.ethUsd, scannedPairs: s.scannedPairs,
       pools: s.pools.map((x) => ({
-        pair: x.pair, token: x.token,
-        reserveToken: x.reserveToken.toString(), reserveWeth: x.reserveWeth.toString(),
+        pair: x.pair, token: x.token, reserveToken: x.reserveToken.toString(),
+        quote: x.quote, reserveQuote: x.reserveQuote.toString(),
       })),
     };
     localStorage.setItem(CACHE_KEY, JSON.stringify(p));
   } catch { /* storage blocked — fine */ }
-}
-
-function finalizePool(
-  base: { pair: Address; token: TokenInfo; reserveToken: bigint; reserveWeth: bigint },
-  ethUsd: number | null,
-): PoolInfo {
-  let tvlUsd: number | null = null;
-  let priceUsd: number | null = null;
-  if (ethUsd !== null && base.reserveWeth > 0n) {
-    const weth = Number(formatUnits(base.reserveWeth, 18));
-    tvlUsd = 2 * weth * ethUsd;
-    const tok = Number(formatUnits(base.reserveToken, base.token.decimals));
-    if (tok > 0) priceUsd = (weth * ethUsd) / tok;
-  }
-  return { ...base, tvlUsd, priceUsd };
 }
 
 /** Spot ETH/USD from the WETH/USDG v2 pair (module-cached 60s). */
@@ -145,6 +160,7 @@ async function attachLogos(snap: PoolsSnapshot): Promise<PoolsSnapshot> {
 
 async function scan(client: PublicClient): Promise<PoolsSnapshot> {
   const weth = ADDRESSES.weth.toLowerCase();
+  const usdg = ADDRESSES.usdg.toLowerCase();
   const factory = ADDRESSES.v2Factory as Address;
 
   const [ethUsd, lengthBn] = await Promise.all([
@@ -188,7 +204,12 @@ async function scan(client: PublicClient): Promise<PoolsSnapshot> {
   }).catch(() => null);
   if (!detail) return empty;
 
-  type Raw = { pair: Address; tokenAddr: string; reserveToken: bigint; reserveWeth: bigint };
+  const quoteOf = (x: string): QuoteAsset | null => (x === weth ? "WETH" : x === usdg ? "USDG" : null);
+
+  type Raw = {
+    pair: Address; tokenAddr: string; reserveToken: bigint;
+    quote: QuoteAsset; reserveQuote: bigint; usdDepth: number;
+  };
   const raw: Raw[] = [];
   for (let i = 0; i < pairs.length; i++) {
     const t0 = detail[i * 3], t1 = detail[i * 3 + 1], rs = detail[i * 3 + 2];
@@ -196,17 +217,24 @@ async function scan(client: PublicClient): Promise<PoolsSnapshot> {
     const a = (t0.result as string).toLowerCase();
     const b = (t1.result as string).toLowerCase();
     const [r0, r1] = rs.result as readonly [bigint, bigint, number];
-    if (a === weth && b !== weth) raw.push({ pair: pairs[i], tokenAddr: b, reserveToken: r1, reserveWeth: r0 });
-    else if (b === weth && a !== weth) raw.push({ pair: pairs[i], tokenAddr: a, reserveToken: r0, reserveWeth: r1 });
+    const qa = quoteOf(a), qb = quoteOf(b);
+    let tokenAddr: string, quote: QuoteAsset, reserveQuote: bigint, reserveToken: bigint;
+    if (qa && !qb) { tokenAddr = b; quote = qa; reserveQuote = r0; reserveToken = r1; }
+    else if (qb && !qa) { tokenAddr = a; quote = qb; reserveQuote = r1; reserveToken = r0; }
+    else continue; // both blue-chip (e.g. WETH/USDG) or neither
+    const usdDepth = quote === "USDG"
+      ? Number(formatUnits(reserveQuote, USDG_DECIMALS))
+      : Number(formatUnits(reserveQuote, 18)) * (ethUsd ?? 0);
+    raw.push({ pair: pairs[i], tokenAddr, quote, reserveQuote, reserveToken, usdDepth });
   }
-  // dedup by token, keep deepest pool; drop the USDG pricing pair from listings
+
+  // dedup by token, keep the deepest pool (in USD)
   const byToken = new Map<string, Raw>();
   for (const r of raw) {
-    if (r.tokenAddr === ADDRESSES.usdg.toLowerCase()) continue;
     const prev = byToken.get(r.tokenAddr);
-    if (!prev || r.reserveWeth > prev.reserveWeth) byToken.set(r.tokenAddr, r);
+    if (!prev || r.usdDepth > prev.usdDepth) byToken.set(r.tokenAddr, r);
   }
-  const ranked = [...byToken.values()].sort((x, y) => (y.reserveWeth > x.reserveWeth ? 1 : -1));
+  const ranked = [...byToken.values()].sort((x, y) => y.usdDepth - x.usdDepth);
   const top = ranked.slice(0, META_TOP);
   if (top.length === 0) return { ...empty, scannedPairs: pairs.length };
 
@@ -234,16 +262,19 @@ async function scan(client: PublicClient): Promise<PoolsSnapshot> {
         decimals: Number(dec.result),
       },
       reserveToken: top[i].reserveToken,
-      reserveWeth: top[i].reserveWeth,
+      quote: top[i].quote,
+      reserveQuote: top[i].reserveQuote,
     }, ethUsd));
   }
+  // final ordering by USD TVL (biggest cap first), nulls last
+  pools.sort((a, b) => (b.tvlUsd ?? -1) - (a.tvlUsd ?? -1));
 
   const snapshot: PoolsSnapshot = { at: Date.now(), ethUsd, pools, scannedPairs: pairs.length };
   writeCache(snapshot);
   return snapshot;
 }
 
-/** Token list for the picker — deepest liquidity first. */
+/** Token list for the picker — biggest USD TVL first. */
 export async function discoverOnchainTokens(client: PublicClient): Promise<TokenInfo[]> {
   const snap = await discoverPools(client);
   return snap.pools.map((p) => ({ ...p.token, tvlUsd: p.tvlUsd }));

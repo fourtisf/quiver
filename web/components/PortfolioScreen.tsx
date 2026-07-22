@@ -111,7 +111,7 @@ function PortfolioScreenInner() {
                 <div key={p.pool.pair} className="flex items-center gap-3 border-b border-stratum/30 px-4 py-3 last:border-0">
                   <TokenLogo token={p.pool.token} size={26} />
                   <span>
-                    <span className="block text-sm font-semibold">{p.pool.token.symbol}/WETH LP</span>
+                    <span className="block text-sm font-semibold">{p.pool.token.symbol}/{p.pool.quote} LP</span>
                     <span className="block text-xs text-silt">{p.sharePct.toFixed(2)}% of pool</span>
                   </span>
                   <span className="ml-auto text-right">
