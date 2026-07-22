@@ -67,6 +67,15 @@ export const v2FactoryAbi = [
     inputs: [{ name: "tokenA", type: "address" }, { name: "tokenB", type: "address" }],
     outputs: [{ name: "pair", type: "address" }],
   },
+  {
+    type: "function", name: "allPairs", stateMutability: "view",
+    inputs: [{ name: "index", type: "uint256" }],
+    outputs: [{ name: "pair", type: "address" }],
+  },
+  {
+    type: "function", name: "allPairsLength", stateMutability: "view",
+    inputs: [], outputs: [{ type: "uint256" }],
+  },
 ] as const;
 
 export const v2PairAbi = [
@@ -80,4 +89,5 @@ export const v2PairAbi = [
     ],
   },
   { type: "function", name: "token0", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
+  { type: "function", name: "token1", stateMutability: "view", inputs: [], outputs: [{ type: "address" }] },
 ] as const;

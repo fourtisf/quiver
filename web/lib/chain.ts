@@ -15,4 +15,8 @@ export const robinhoodChain = defineChain({
   blockExplorers: {
     default: { name: "Blockscout", url: "https://robinhoodchain.blockscout.com" },
   },
+  contracts: {
+    // canonical cross-chain Multicall3; presence verified by the CI preflight
+    multicall3: { address: "0xcA11bde05977b3631167028862bE2a173976CA11" },
+  },
 });

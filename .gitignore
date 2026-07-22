@@ -10,6 +10,8 @@ dist/
 # foundry
 contracts/cache/
 contracts/out/
+contracts/lib/
+lib/
 contracts/broadcast/**/dry-run/
 
 # indexer

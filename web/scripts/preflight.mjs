@@ -106,5 +106,21 @@ try {
   warn(`quote diagnostic failed: ${e.shortMessage ?? e.message}`);
 }
 
+// 6. diagnostic: Multicall3 (token discovery) + v2 pair count
+try {
+  const MC3 = "0xcA11bde05977b3631167028862bE2a173976CA11";
+  const code = await client.getCode({ address: MC3 });
+  code && code !== "0x"
+    ? pass(`Multicall3 deployed at ${MC3} (token discovery uses batched calls)`)
+    : warn(`Multicall3 missing at ${MC3} — discovery falls back to capped sequential reads`);
+  const pairFactoryAbi = parseAbi(["function allPairsLength() view returns (uint256)"]);
+  const nPairs = await client.readContract({
+    address: ADDRESSES.v2Factory, abi: pairFactoryAbi, functionName: "allPairsLength",
+  });
+  pass(`v2 factory reports ${nPairs} pairs (picker discovery source)`);
+} catch (e) {
+  warn(`discovery diagnostic failed: ${e.shortMessage ?? e.message}`);
+}
+
 console.log(failures === 0 ? "\nPreflight PASSED" : `\nPreflight FAILED (${failures} fatal)`);
 process.exit(failures === 0 ? 0 : 1);

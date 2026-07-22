@@ -5,6 +5,7 @@ import { isAddress, type Address } from "viem";
 import { usePublicClient } from "wagmi";
 import { erc20Abi } from "@/lib/abis";
 import { CORE_TOKENS, fetchRobinfunTokens, type TokenInfo } from "@/lib/tokens";
+import { discoverOnchainTokens } from "@/lib/discover";
 import { TokenLogo } from "./TokenLogo";
 import { shortAddr } from "@/lib/format";
 
@@ -21,6 +22,8 @@ export function TokenSelect({
 }) {
   const [query, setQuery] = useState("");
   const [robinfun, setRobinfun] = useState<TokenInfo[]>([]);
+  const [discovered, setDiscovered] = useState<TokenInfo[]>([]);
+  const [scanning, setScanning] = useState(false);
   const [resolved, setResolved] = useState<TokenInfo | null>(null);
   const [resolving, setResolving] = useState(false);
   const client = usePublicClient();
@@ -31,8 +34,15 @@ export function TokenSelect({
     fetchRobinfunTokens().then((list) => {
       if (!cancelled) setRobinfun(list);
     });
+    if (client) {
+      setScanning(true);
+      discoverOnchainTokens(client)
+        .then((list) => { if (!cancelled) setDiscovered(list); })
+        .catch(() => { /* discovery is best-effort */ })
+        .finally(() => { if (!cancelled) setScanning(false); });
+    }
     return () => { cancelled = true; };
-  }, [open]);
+  }, [open, client]);
 
   // Escape closes the modal
   useEffect(() => {
@@ -68,6 +78,12 @@ export function TokenSelect({
     !!exclude && addr.toLowerCase() === exclude.toLowerCase();
 
   const list = useMemo(() => {
+    // merge order: core -> launchpad list (has logos) -> on-chain discovered;
+    // launchpad logos win for addresses present in both
+    const logoByAddr = new Map<string, string>();
+    for (const t of robinfun) {
+      if (t.logoURI) logoByAddr.set(t.address.toLowerCase(), t.logoURI);
+    }
     const seen = new Set(CORE_TOKENS.map((t) => t.address.toLowerCase()));
     const merged = [...CORE_TOKENS];
     for (const t of robinfun) {
@@ -75,6 +91,13 @@ export function TokenSelect({
       if (!seen.has(key)) {
         seen.add(key);
         merged.push(t);
+      }
+    }
+    for (const t of discovered) {
+      const key = t.address.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        merged.push({ ...t, logoURI: logoByAddr.get(key) });
       }
     }
     const all = merged.filter((t) => !isExcluded(t.address));
@@ -87,7 +110,7 @@ export function TokenSelect({
         t.address.toLowerCase() === q,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [robinfun, query, exclude]);
+  }, [robinfun, discovered, query, exclude]);
 
   /* Robinfun list entries assume 18 decimals; verify on-chain at selection so
    * a nonstandard token can't corrupt every amount in the swap form. */
@@ -153,11 +176,13 @@ export function TokenSelect({
             </p>
           ) : null}
         </div>
-        {robinfun.length === 0 ? (
-          <p className="mt-3 border-t border-stratum/60 pt-3 font-mono text-[11px] text-silt-dark">
-            Launchpad token list unreachable — core tokens + address paste still work.
-          </p>
-        ) : null}
+        <p className="mt-3 border-t border-stratum/60 pt-3 font-mono text-[11px] text-silt-dark">
+          {scanning
+            ? "Scanning on-chain pools…"
+            : discovered.length > 0
+              ? `${discovered.length} tokens discovered from on-chain pools.`
+              : "On-chain scan found no extra pools — paste any token address to resolve it."}
+        </p>
       </div>
     </div>
   );
