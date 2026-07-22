@@ -21,11 +21,12 @@ function candidateUrls(token: TokenInfo): string[] {
     const lower = token.address.toLowerCase();
     let checksum = lower;
     try { checksum = getAddress(token.address); } catch { /* keep lower */ }
-    // DexScreener token image CDN — the chain slug is "robinhood"
-    list.push(`https://dd.dexscreener.com/ds-data/tokens/robinhood/${lower}.png`);
-    if (checksum !== lower) {
-      list.push(`https://dd.dexscreener.com/ds-data/tokens/robinhood/${checksum}.png`);
-    }
+    const base = "https://dd.dexscreener.com/ds-data/tokens/robinhood";
+    // DexScreener's CDN keys EVM tokens by checksum address (documented format);
+    // try that first, then lowercase, then the launchpad-metadata thumbnail size.
+    list.push(`${base}/${checksum}.png`);
+    if (lower !== checksum) list.push(`${base}/${lower}.png`);
+    list.push(`${base}/${checksum}.png?size=lg`);
   }
   return list;
 }
