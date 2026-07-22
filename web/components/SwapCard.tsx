@@ -12,7 +12,7 @@ import {
 import { erc20Abi, v2RouterAbi } from "@/lib/abis";
 import { ADDRESSES } from "@/lib/addresses";
 import { NATIVE_ETH, type TokenInfo } from "@/lib/tokens";
-import { getEthUsd } from "@/lib/discover";
+import { discoverPools, getEthUsd } from "@/lib/discover";
 import { fmtAmount } from "@/lib/format";
 import { TokenLogo } from "./TokenLogo";
 import { TokenSelect } from "./TokenSelect";
@@ -75,6 +75,9 @@ export function SwapCard() {
     if (!client) return;
     let cancelled = false;
     getEthUsd(client).then((v) => { if (!cancelled) setEthUsd(v); });
+    // warm the pool/token scan on page load so the token picker opens with
+    // the full list already populated instead of scanning after it's clicked
+    discoverPools(client).catch(() => { /* best-effort prefetch */ });
     return () => { cancelled = true; };
   }, [client]);
 
