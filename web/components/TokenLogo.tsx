@@ -76,16 +76,27 @@ export function TokenLogo({ token, size = 28 }: { token: TokenInfo; size?: numbe
   );
 }
 
-/** Small Robinhood-green disc in the bottom-right corner = "on Robinhood Chain". */
+/** Robinhood Chain badge — the Robinhood feather on a brand-green disc,
+ * bottom-right corner, the way Uniswap stamps a token with its network. */
 function ChainBadge({ size }: { size: number }) {
-  const b = Math.max(9, Math.round(size * 0.42));
-  const off = -Math.round(b * 0.18);
+  const b = Math.max(12, Math.round(size * 0.5));
+  const off = -Math.round(b * 0.14);
+  const bw = Math.max(1.4, b * 0.11);
+  const g = Math.round((b - bw * 2) * 0.94);
   return (
     <span
       aria-hidden
       title="Robinhood Chain"
-      className="absolute rounded-full border-2 border-ink-2 bg-[#00C805]"
-      style={{ width: b, height: b, right: off, bottom: off }}
-    />
+      className="absolute inline-flex items-center justify-center rounded-full bg-[#00C805]"
+      style={{ width: b, height: b, right: off, bottom: off, border: `${bw}px solid #081416` }}
+    >
+      <svg viewBox="0 0 24 24" width={g} height={g} fill="none" aria-hidden>
+        {/* feather vane */}
+        <path d="M19 5C10 6 6 12 6 19c7 0 13-6 13-14Z" fill="#fff" />
+        {/* rachis + barbs cut in the brand green so it reads as a feather */}
+        <path d="M16.6 7.4 7.7 16.3" stroke="#00C805" strokeWidth="1.6" strokeLinecap="round" />
+        <path d="M13.8 8.6 10.4 12M15.8 10.8 12.4 14.2" stroke="#00C805" strokeWidth="1" strokeLinecap="round" />
+      </svg>
+    </span>
   );
 }
