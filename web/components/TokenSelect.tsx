@@ -92,10 +92,13 @@ export function TokenSelect({
       if (!prev) {
         extra.set(key, t);
       } else {
+        const mc = [prev.marketCapUsd, t.marketCapUsd]
+          .filter((v): v is number => typeof v === "number" && Number.isFinite(v));
         extra.set(key, {
           ...prev,
           logoURI: prev.logoURI ?? t.logoURI,
           tvlUsd: Math.max(prev.tvlUsd ?? 0, t.tvlUsd ?? 0) || prev.tvlUsd || t.tvlUsd,
+          marketCapUsd: mc.length ? Math.max(...mc) : (prev.marketCapUsd ?? t.marketCapUsd ?? null),
           name: prev.name || t.name,
         });
       }
@@ -192,8 +195,9 @@ export function TokenSelect({
   );
 }
 
-function fmtTvl(v: number | null | undefined): string | null {
+function fmtUsd(v: number | null | undefined): string | null {
   if (v === null || v === undefined || !Number.isFinite(v)) return null;
+  if (v >= 1_000_000_000) return `$${(v / 1_000_000_000).toFixed(2)}B`;
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
   if (v >= 1_000) return `$${(v / 1_000).toFixed(0)}K`;
   return `$${v.toFixed(0)}`;
@@ -210,7 +214,8 @@ function TokenRow({
   note?: string;
   dup?: boolean;
 }) {
-  const tvl = fmtTvl(token.tvlUsd);
+  const mc = fmtUsd(token.marketCapUsd);
+  const tvl = fmtUsd(token.tvlUsd);
   return (
     <button
       className="flex w-full items-center gap-3 rounded-md px-2 py-2.5 text-left hover:bg-spring/10"
@@ -233,7 +238,8 @@ function TokenRow({
       </span>
       <span className="ml-auto text-right font-mono text-[11px] leading-tight text-silt-dark">
         {note ?? (token.address === "native" ? "" : shortAddr(token.address))}
-        {tvl ? <span className="block text-[10px] text-silt">TVL {tvl}</span> : null}
+        {mc ? <span className="block text-[10px] text-silt">MC {mc}</span> : null}
+        {tvl ? <span className="block text-[10px] text-silt-dark">TVL {tvl}</span> : null}
       </span>
     </button>
   );

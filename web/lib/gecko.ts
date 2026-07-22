@@ -31,7 +31,10 @@ function writeCache(tokens: TokenInfo[]) {
 }
 
 type GtToken = { attributes?: { address?: string; name?: string; symbol?: string; decimals?: number; image_url?: string } };
-type GtPool = { attributes?: { reserve_in_usd?: string }; relationships?: Record<string, { data?: { id?: string } }> };
+type GtPool = {
+  attributes?: { reserve_in_usd?: string; market_cap_usd?: string | null; fdv_usd?: string | null };
+  relationships?: Record<string, { data?: { id?: string } }>;
+};
 
 let inflight: Promise<TokenInfo[]> | null = null;
 
@@ -68,13 +71,24 @@ async function scan(): Promise<TokenInfo[]> {
     }
     for (const pool of body?.data ?? []) {
       const tvl = Number(pool.attributes?.reserve_in_usd ?? 0);
+      // market cap belongs to the pool's BASE token (fall back to FDV)
+      const mcRaw = pool.attributes?.market_cap_usd ?? pool.attributes?.fdv_usd;
+      const poolMcap = mcRaw != null && Number.isFinite(Number(mcRaw)) && Number(mcRaw) > 0 ? Number(mcRaw) : null;
       for (const side of ["base_token", "quote_token"]) {
         const id = pool.relationships?.[side]?.data?.id;
         const attr = id ? tokens.get(id) : undefined;
         if (!attr?.address) continue;
         const addr = attr.address.toLowerCase();
         if (stables.has(addr)) continue;
+        if (/^0x0+$/.test(addr)) continue; // native/placeholder address, not a real ERC20
+        const thisMcap = side === "base_token" ? poolMcap : null;
         const prev = byAddr.get(addr);
+        // keep whichever pool is deepest for metadata, but let market cap stick
+        // once any pool reports it (a token is base in some pools, quote in others)
+        const mergedMcap =
+          thisMcap != null && (prev?.marketCapUsd == null || thisMcap > prev.marketCapUsd)
+            ? thisMcap
+            : prev?.marketCapUsd ?? null;
         if (!prev || tvl > prev.tvlUsd) {
           byAddr.set(addr, {
             address: attr.address,
@@ -86,7 +100,10 @@ async function scan(): Promise<TokenInfo[]> {
                 ? attr.image_url
                 : undefined,
             tvlUsd: tvl,
+            marketCapUsd: mergedMcap,
           });
+        } else if (mergedMcap != null) {
+          prev.marketCapUsd = mergedMcap;
         }
       }
     }

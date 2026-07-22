@@ -9,6 +9,8 @@ export type TokenInfo = {
   logoURI?: string;
   /** pool depth in USD when known (discovery source) — helps spot clones */
   tvlUsd?: number | null;
+  /** market cap in USD (falls back to FDV) when known — GeckoTerminal source */
+  marketCapUsd?: number | null;
 };
 
 export const NATIVE_ETH: TokenInfo = {
