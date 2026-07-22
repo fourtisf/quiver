@@ -57,7 +57,19 @@ export default function Shell({ tab, children }: { tab: TabKey; children: React.
                   ))}
                 </div>
 
-                <span className="ml-auto flex-shrink-0">
+                <span className="ml-auto flex flex-shrink-0 items-center gap-2">
+                  <a
+                    href="https://x.com/Hoodpoolfun"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label="Hoodpool on X"
+                    title="@Hoodpoolfun"
+                    className="hidden h-9 w-9 items-center justify-center rounded-[10px] border border-stratum/70 bg-ink/50 text-silt transition hover:border-spring/40 hover:text-foam sm:flex"
+                  >
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true">
+                      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                    </svg>
+                  </a>
                   <ConnectButton showBalance={false} chainStatus="icon" accountStatus="avatar" label="Connect" />
                 </span>
               </div>

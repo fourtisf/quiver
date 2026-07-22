@@ -114,6 +114,10 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .nav-cta{margin-left:auto;display:flex;gap:10px;align-items:center}
 .nav-link{font-size:13px;font-weight:600;color:var(--silt);padding:8px 10px;border-radius:9px;transition:color .15s}
 .nav-link:hover{color:var(--foam)}
+.nav-x{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:10px;
+  color:var(--silt);border:1px solid rgba(31,57,61,.7);background:rgba(5,14,16,.5);transition:color .15s,border-color .15s}
+.nav-x:hover{color:var(--foam);border-color:rgba(63,224,174,.4)}
+.nav-x svg{width:15px;height:15px;fill:currentColor}
 
 /* ---------- buttons ---------- */
 .btn{
@@ -339,6 +343,9 @@ footer{margin-top:46px;border-top:1px solid rgba(31,57,61,.5)}
     <span class="nav-cta">
       <a class="nav-link" href="/docs/">Docs</a>
       <a class="nav-link" href="/preview/">Preview</a>
+      <a class="nav-x" href="https://x.com/Hoodpoolfun" target="_blank" rel="noopener" aria-label="Hoodpool on X" title="@Hoodpoolfun">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </a>
       <a class="btn btn-primary btn-sm" href="/app/">Launch app</a>
     </span>
   </div>
